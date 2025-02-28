@@ -85,7 +85,7 @@ const Footer = () => {
             </div>
         </div>
         <div className='container mx-auto mt-12 px-4 lg:px-0 border-t border-gray-600 pt-6'>
-            <p className='text-gray-500 text-sm tracking-tighter text-center'>2025, CompileTab. All Right Reserve.</p>
+            <p className='text-gray-500 text-sm tracking-tighter text-center'>2025, SIA PVT LTD. All Right Reserve.</p>
         </div>
     </footer>
   )
