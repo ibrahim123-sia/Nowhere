@@ -9,6 +9,8 @@ import CollectionPage from "./Pages/CollectionPage";
 import ProductDetail from "./components/Product/ProductDetail";
 import Checkout from "./components/Cart/Checkout";
 import OrderConfirmationPage from './Pages/OrderConfirmationPage'
+import OrderDetailPage from "./Pages/OrderDetailPage";
+import AdminLayout from "./components/Admin/AdminLayout";
 const App = () => {
   return (
 
@@ -24,7 +26,9 @@ const App = () => {
         <Route path="product/:id" element={<ProductDetail/>}></Route>
         <Route path="checkout" element={<Checkout/>}></Route>
         <Route path="order-confirmation" element={<OrderConfirmationPage/>}></Route>
+        <Route path="order/:id" element={<OrderDetailPage/>}></Route>
       </Route>
+      <Route path="/admin" element={<AdminLayout/>}></Route>
     </Routes>
   </BrowserRouter>
   
