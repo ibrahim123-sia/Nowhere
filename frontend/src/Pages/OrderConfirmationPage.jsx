@@ -28,15 +28,22 @@ const checkout={
     shippingAddress:{
         address:"123 xyz ",
         city:"newyork",
-        country:"USA"
-    }
+        country:"USA",
+    },
 
 }
 
 const OrderConfirmationPage = () => {
   return (
-    <div>
-      
+    <div className='m-w-4xl mx-auto p-6 bg-white'>
+      <h1 className='text-4xl font-bold text-center text-emerald-600 mb-8'>
+        Thanks You For Your Order!
+      </h1>
+
+    {checkout &&(
+        <div></div>
+    )}
+
     </div>
   )
 }
