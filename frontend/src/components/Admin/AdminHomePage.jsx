@@ -8,6 +8,24 @@ const AdminHomePage = () => {
     user: 'Ibrahim',
     totalprice: 110,
     status: 'processing'
+  },
+  {
+    _id: '1234',
+    user: 'Ibrahim',
+    totalprice: 110,
+    status: 'processing'
+  },
+  {
+    _id: '1234',
+    user: 'Ibrahim',
+    totalprice: 110,
+    status: 'processing'
+  },
+  {
+    _id: '1234',
+    user: 'Ibrahim',
+    totalprice: 110,
+    status: 'processing'
   }
 ];
 
