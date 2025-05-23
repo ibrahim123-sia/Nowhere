@@ -1,38 +1,52 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import UserLayout from './components/Layout/UserLayout'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Toaster } from "sonner";
+
+// Layouts
+import UserLayout from "./components/Layout/UserLayout";
+import AdminLayout from "./components/Admin/AdminLayout";
+
+// Pages
 import Home from "./Pages/Home";
-import {Toaster} from 'sonner'
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
 import Profile from "./Pages/Profile";
 import CollectionPage from "./Pages/CollectionPage";
 import ProductDetail from "./components/Product/ProductDetail";
 import Checkout from "./components/Cart/Checkout";
-import OrderConfirmationPage from './Pages/OrderConfirmationPage'
+import OrderConfirmationPage from "./Pages/OrderConfirmationPage";
 import OrderDetailPage from "./Pages/OrderDetailPage";
-import AdminLayout from "./components/Admin/AdminLayout";
+import AdminHomePage from "./components/Admin/AdminHomePage";
+
+
+
 const App = () => {
   return (
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <Toaster position="top-right" />
+      <Routes>
 
-    <BrowserRouter future={{v7_startTransition:true,v7_relativeSplatPath:true}}>
-    <Toaster position="top-right"/>
-    <Routes>
-      <Route path='/' element={<UserLayout />}>
-        <Route index element={<Home />} />
-        <Route path="login" element={<Login/>}/>
-        <Route path="register" element={<Register/>}/>
-        <Route path="profile" element={<Profile/>}/>
-        <Route path="collections/:collection" element={<CollectionPage/>}/>
-        <Route path="product/:id" element={<ProductDetail/>}></Route>
-        <Route path="checkout" element={<Checkout/>}></Route>
-        <Route path="order-confirmation" element={<OrderConfirmationPage/>}></Route>
-        <Route path="order/:id" element={<OrderDetailPage/>}></Route>
-      </Route>
-      <Route path="/admin" element={<AdminLayout/>}></Route>
-    </Routes>
-  </BrowserRouter>
-  
-  )
-}
+        {/* User Layout Routes */}
+        <Route path="/" element={<UserLayout />}>
+          <Route index element={<Home />} />
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="collections/:collection" element={<CollectionPage />} />
+          <Route path="product/:id" element={<ProductDetail />} />
+          <Route path="checkout" element={<Checkout />} />
+          <Route path="order-confirmation" element={<OrderConfirmationPage />} />
+          <Route path="order/:id" element={<OrderDetailPage />} />
+        </Route>
 
-export default App
+        {/* Admin Layout Routes */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminHomePage />} />
+        </Route>
+
+        
+      </Routes>
+    </BrowserRouter>
+  );
+};
+
+export default App;
