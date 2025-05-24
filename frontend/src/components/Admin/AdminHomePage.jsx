@@ -48,7 +48,7 @@ const AdminHomePage = () => {
     <div className='p-4 shadow-md rounded-lg'>
       <h2 className='text-xl font-semibold'>Total Products</h2>
       <p className='text-2xl'>100</p>
-       <Link to="/admin/products" className="text-blue-500 hover:underline">Manage Products</Link>
+       <Link to="/admin/product" className="text-blue-500 hover:underline">Manage Products</Link>
     </div>
   </div>
   
