@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import PaypalButton from "./PaypalButton";
 
 const Checkout = () => {
-  const [checkoutId, setCheckoutId] = useState();
   const cart = {
     product: [
       {
@@ -35,19 +33,34 @@ const Checkout = () => {
     phone: "",
   });
 
-  const handlePaymentSuccess = (details) => {
-    console.log("payment successfyl", details);
-    navigate("order-confirmation");
-  };
-
   const handleCreateCheckout = (e) => {
     e.preventDefault();
-    setCheckoutId(123);
+    
+    
+    const message = `New Order Details:\n\nCustomer: ${shippingAddress.firstName} ${shippingAddress.lastName}
+Address: ${shippingAddress.Address}, ${shippingAddress.City}, ${shippingAddress.postalcode}, ${shippingAddress.country}
+Phone: ${shippingAddress.phone}
+
+Products:
+${cart.product.map(p => `- ${p.name} (Size: ${p.size}, Color: ${p.color}) - $${p.price}`).join('\n')}
+
+Total: $${cart.totalPrice}`;
+
+    // Encode message for WhatsApp URL
+    const encodedMessage = encodeURIComponent(message);
+    // In the handleCreateCheckout function, replace the whatsappUrl line with:
+const whatsappUrl = `https://wa.me/923492073339?text=${encodedMessage}`;
+    
+    // Open WhatsApp and navigate to confirmation
+    window.open(whatsappUrl, '_blank');
+    navigate("/");
+    
+    // TODO: Add database integration here
   };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto py-10 px-6 tracking-tighter">
-      {/* left section */}
+      {/* Left section */}
       <div className="bg-white rounded-lg p-6">
         <h2 className="text-2xl uppercase mb-6">Checkout</h2>
         <form onSubmit={handleCreateCheckout}>
@@ -172,28 +185,17 @@ const Checkout = () => {
             />
           </div>
           <div className="mb-6">
-            {!checkoutId ? (
-              <button
-                type="submit"
-                className="w-full bg-black text-white py-3 rounded"
-              >
-                Continue to payment
-              </button>
-            ) : (
-              <div>
-                <h3 className="text-lg mb-4">Pay with Paypal</h3>
-                <PaypalButton
-                  amount={100}
-                  onSuccess={handlePaymentSuccess}
-                  onError={(err) => alert("Payment Fail. try again")}
-                />
-              </div>
-            )}
+            <button
+              type="submit"
+              className="w-full bg-black text-white py-3 rounded"
+            >
+              Place Order
+            </button>
           </div>
         </form>
       </div>
 
-      {/* right section */}
+      {/* Right section */}
       <div className="bg-gray-50 p-6 rounded-lg">
         <h3 className="text-lg mb-4">Order Summary</h3>
         <div className="border-t py-4 mb-4">
@@ -203,7 +205,11 @@ const Checkout = () => {
               className="flex items-start justify-between py-2 border-b"
             >
               <div className="flex items-start">
-                <img src={product.image} alt={product.image} className="w-20 h-24 object-cover mr-4"/>
+                <img 
+                  src={product.image} 
+                  alt={product.image} 
+                  className="w-20 h-24 object-cover mr-4"
+                />
                 <div>
                   <h3 className="text-md">{product.name}</h3>
                   <p className="text-gray-500">Size: {product.size}</p>
