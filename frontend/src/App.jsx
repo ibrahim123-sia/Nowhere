@@ -13,6 +13,9 @@ import OrderDetailPage from "./Pages/OrderDetailPage";
 import MyOrdersPage from "./Pages/MyOrdersPage";
 import AdminLayout from "./components/Admin/AdminLayout";
 import AdminHomePage from "./Pages/AdminHomePage";
+import UserManagement from "./components/Admin/UserManagement";
+import ProductManagement from "./components/Admin/ProductManagement";
+import EditProductPage from "./components/Admin/EditProductPage";
 const App = () => {
   return (
 
@@ -32,8 +35,12 @@ const App = () => {
         <Route path="my-orders" element={<MyOrdersPage/>}/>
       </Route>
       {/* admin route */}
-      <Route path="/admin" element={<AdminLayout/>}/>
-      <Route index element={<AdminHomePage/>}/>
+       <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminHomePage />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="products" element={<ProductManagement />} />
+          <Route path="product/:id/edit" element={<EditProductPage/>}/>
+        </Route>
     </Routes>
   </BrowserRouter>
   
