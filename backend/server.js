@@ -3,6 +3,8 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const userRoutes = require("./routes/userRoutes");
+const productRoutes = require("./routes/productRoutes");
+const cartRoute=require("./routes/cartRoutes");
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -15,6 +17,8 @@ connectDB();
 
 // 5. Register routes AFTER middleware
 app.use("/api/users", userRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/cart", cartRoute);
 
 
 // Test route
