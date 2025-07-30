@@ -30,7 +30,7 @@ router.post("/",protect,async(req,res)=>{
             paymentStatus:"Pending",
             isPaid:false,
         })
-        console.log(`Checkour created for user: ${req.user._id}`);
+        
         res.status(201).json(newCheckout)
 
     }
