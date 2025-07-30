@@ -5,6 +5,7 @@ const connectDB = require("./config/db");
 const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes");
 const cartRoute=require("./routes/cartRoutes");
+const checkoutRoute=require("./routes/checkoutRoutes");
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -19,6 +20,7 @@ connectDB();
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoute);
+app.use("/api/checkout", checkoutRoute);
 
 
 // Test route
