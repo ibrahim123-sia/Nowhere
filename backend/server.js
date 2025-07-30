@@ -6,6 +6,7 @@ const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes");
 const cartRoute=require("./routes/cartRoutes");
 const checkoutRoute=require("./routes/checkoutRoutes");
+const orderRoute=require("./routes/orderRoutes");
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -21,6 +22,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoute);
 app.use("/api/checkout", checkoutRoute);
+app.use("/api/orders", orderRoute);
 
 
 // Test route
