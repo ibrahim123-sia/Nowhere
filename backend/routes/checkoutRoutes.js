@@ -1,6 +1,7 @@
 const express=require("express")
 const Checkout=require("../models/Checkout");
 const Cart=require("../models/Cart");
+const mongoose = require("mongoose");
 const Product=require("../models/Product");
 const Order=require("../models/Order");
 const {protect}=require("../middleware/authMiddleware");
@@ -14,7 +15,7 @@ const router=express.Router();
 router.post("/",protect,async(req,res)=>{
     const {checkoutItems,shippingAddress,paymentMethod,totalPrice}=req.body;
 
-        if(!CheckoutItems || CheckoutItems.length===0){
+        if(!checkoutItems || checkoutItems.length===0){
             return res.status(400).json({message:"no item in checkout"})
         }
     try{
@@ -80,7 +81,10 @@ router.post("/:id/finalize",protect,async(req,res)=>{
 
     try{
 
-        const checkout=await Checkout.findById(req.params.id)
+       
+const checkout = await Checkout.findById(req.params.id);
+
+       
         if(!checkout){
             return res.status(404).json({message:"checkout not found"})
         }
@@ -90,12 +94,12 @@ router.post("/:id/finalize",protect,async(req,res)=>{
 
             const finalOrder=await Order.create({
                 user:checkout.user,
-                orderItems:checkout.orderItems,
+                orderItems:checkout.checkoutItems,
                 shippingAddress:checkout.shippingAddress,
                 paymentMethod:checkout.paymentMethod,
                 totalPrice:checkout.totalPrice,
                 isPaid:true,
-                paidAt:checkout.isPaid,
+                paidAt:checkout.paidAt,
                 isDelivered:false,
                 paymentStatus:"Paid",
                 paymentDetails:checkout.paymentDetails,
