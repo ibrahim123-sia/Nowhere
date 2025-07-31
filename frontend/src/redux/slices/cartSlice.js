@@ -135,7 +135,7 @@ const cartSlice = createSlice({
   },
   reducers: {
     clearCart: (state) => {
-      startTransition.cart = { products: [] };
+      state.cart = { products: [] };
       localStorage.removeItem("cart");
     },
   },
