@@ -59,7 +59,7 @@ export const registerUser = createAsyncThunk(
 const authSlice = createSlice({
   name: "auth",
   initialState,
-  reducer: {
+  reducers: {
     logout: (state) => {
       state.user = null;
       state.guestId = `guest_${new Date().getTime()}`; //reset guestId on logout
@@ -81,7 +81,7 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.user = action.payload;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;

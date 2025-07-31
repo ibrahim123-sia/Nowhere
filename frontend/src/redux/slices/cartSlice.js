@@ -53,7 +53,7 @@ export const addToCart = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      console.error(error);
+      
       return rejectWithValue(error.response.data);
     }
   }
@@ -63,7 +63,7 @@ export const addToCart = createAsyncThunk(
 export const updateCartItemQuantity = createAsyncThunk(
   "updateCartItemQuantity",
   async (
-    { productId, quantity, guestId, using, size, color },
+    { productId, quantity, guestId, userId, size, color },
     { rejectWithValue }
   ) => {
     try {
@@ -94,7 +94,7 @@ export const removeFromCart = createAsyncThunk(
       const response = await axios.delete({
         method: "DELETE",
         url: `${import.meta.env.VITE_BACKEND_URL}/api/cart`,
-        date: { productId, guestId, userId, size, color },
+        data: { productId, guestId, userId, size, color },
       });
       return response.data;
     } catch (error) {
