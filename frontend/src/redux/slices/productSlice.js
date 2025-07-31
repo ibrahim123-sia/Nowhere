@@ -31,7 +31,7 @@ export const fetchProductsByFilters = createAsyncThunk(
     if (category) query.append("category", category);
     if (material) query.append("material", material);
     if (brand) query.append("brand", brand);
-    if (limit) query.append("limit", collection);
+    if (limit) query.append("limit", limit);
 
     const response = await axios.get(
       `${import.meta.env.VITE_BACKEND_URL}/api/products?${query.toString()}`
@@ -84,7 +84,7 @@ const productsSlice = createSlice({
   name: "products",
   initialState: {
     products: [],
-    selectedProduct: [], //store detail of single product
+    selectedProduct: null, //store detail of single product
     similarProducts: [],
     loading: false,
     error: null,
@@ -156,7 +156,7 @@ const productsSlice = createSlice({
         state.loading = false;
         const updatedProduct = action.payload;
         const index = action.products.findIndex(
-          (product) => product._id === updateProduct._id
+          (product) => product._id === updatedProduct._id
         );
         if (index !== -1) {
           state.products[index] = updatedProduct;
@@ -172,7 +172,7 @@ const productsSlice = createSlice({
       })
       .addCase(fetchSimilarProducts.fulfilled, (state, action) => {
         state.loading = false;
-        state.products = action.payload;
+        state.similarProducts = action.payload;
       })
       .addCase(fetchSimilarProducts.rejected, (state, action) => {
         state.loading = false;
