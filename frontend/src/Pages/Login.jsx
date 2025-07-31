@@ -1,20 +1,24 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import login from '../assets/login.webp'
+import login from "../assets/login.webp";
+import { loginUser } from "../redux/slices/authSlice";
+import { useDispatch } from "react-redux";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const disPatch=useDispatch();
 
-  const handleSubmit=(e)=>{
+  const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("user login:", {email,password})
-}
+    disPatch(loginUser({email,password}))
+  };
 
   return (
     <div className="flex">
       <div className="w-full md:w-1/2 flex flex-col justify-center items-center p-6 md:p-12">
-        <form onSubmit={handleSubmit}
+        <form
+          onSubmit={handleSubmit}
           action=""
           className="w-full max-w-md bg-white p-8 rounded-lg border shadow-md"
         >
@@ -52,7 +56,7 @@ const Login = () => {
             Sign In
           </button>
           <p className="mt-6 text-center text-sm">
-            Don't have an account? { }
+            Don't have an account? {}
             <Link to="/register" className="text-blue-500">
               Register
             </Link>
@@ -61,7 +65,11 @@ const Login = () => {
       </div>
       <div className="hidden md:block w-1/2 bg-gray-800">
         <div className="h-full flex flex-col justify-center items-center">
-          <img src={login} alt="Login to Account" className="h-[750px] w-full object-cover"/>
+          <img
+            src={login}
+            alt="Login to Account"
+            className="h-[750px] w-full object-cover"
+          />
         </div>
       </div>
     </div>
