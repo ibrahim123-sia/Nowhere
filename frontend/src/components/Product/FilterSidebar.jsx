@@ -15,22 +15,22 @@ const FilterSidebar = () => {
     maxPrice: 100,
   });
   const [priceRange, setPriceRange] = useState([0, 100]);
-  const categories = ["Top wear", "Bottom wear"];
+  const categories = ["Top Wear", "Bottom Wear"];
   const colors = [
-    "red",
-    "blue",
-    "black",
-    "green",
-    "yellow",
-    "gray",
-    "white",
-    "pink",
-    "biege",
-    "navy",
+    "Red",
+    "Blue",
+    "Black",
+    "Green",
+    "Yellow",
+    "Gray",
+    "White",
+    "Pink",
+    "Biege",
+    "Navy",
   ];
   const sizes = ["XS", "S", "L", "XL", "XXL"];
-  const material = ["cotton", "wool", "denim", "polyester", "silk", "lenin"];
-  const brand = ["urban threads", "modern fit", "street style"];
+  const material = ["Cotton", "Wool", "Denim", "Polyester", "Silk", "Lenin"];
+  const brand = ["Urban Threads", "Sodern Fit", "Street Style"];
   const genders = ["Men", "Women"];
   // x.com/?a=1&b=2
 
@@ -70,7 +70,7 @@ const FilterSidebar = () => {
     const newPrice = e.target.value;
     setPriceRange([0, newPrice]);
     const newFilters = { ...filter, minPrice: 0, maxPrice: newPrice };
-    setFilter(filter);
+    setFilter(newFilters);
     updateURLParams(newFilters);
   };
 

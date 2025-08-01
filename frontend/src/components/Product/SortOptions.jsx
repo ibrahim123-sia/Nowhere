@@ -4,8 +4,8 @@ import { useSearchParams } from "react-router-dom";
 const SortOptions = () => {
   const [searchParams, setsearchParams] = useSearchParams();
   const handleSortChange = (e) => {
-    const SortBy = e.target.value;
-    searchParams.set("SortBy", SortBy);
+    const sortBy = e.target.value;
+    searchParams.set("sortBy", sortBy);
     setsearchParams(searchParams);
   };
   return (
@@ -17,9 +17,9 @@ const SortOptions = () => {
         className="border p-1 rounded-md focus:outline-none text-xs"
       >
         <option value="">Default</option>
-        <option value="PriceAsc">Price: Low To High</option>
-        <option value="PriceDesc">Price: High To Low</option>
-        <option value="Popularity">Popularity</option>
+        <option value="priceAsc">Price: Low To High</option>
+        <option value="priceDesc">Price: High To Low</option>
+        <option value="popularity">Popularity</option>
       </select>
     </div>
   );

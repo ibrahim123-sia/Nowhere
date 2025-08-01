@@ -32,7 +32,7 @@ const Home = () => {
       try {
           const response=await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/products/best-seller`);
           setbestSellerProduct(response.data)
-          console.log(response.data)
+          
       } catch (error) {
         console.error(error);
         
