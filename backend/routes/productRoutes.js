@@ -34,7 +34,7 @@ router.post("/", protect, admin, async (req, res) => {
 
     const product = new Product({
       name,
-      desciption,
+      description,
       price,
       discountPrice,
       countInStock,
@@ -178,7 +178,7 @@ router.get("/", async (req, res) => {
 
     //filter logic
     if (collection && collection.toLocaleLowerCase() !== "all") {
-      query.collection = collection;
+      query.collections = collection;
     }
 
     if (category && category.toLocaleLowerCase() !== "all") {
@@ -194,7 +194,7 @@ router.get("/", async (req, res) => {
     }
 
     if (size) {
-      query.size = { $in: size.split(",") };
+      query.sizes = { $in: size.split(",") };
     }
 
     if (color) {

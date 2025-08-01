@@ -54,7 +54,7 @@ export const fetchProductDetails = createAsyncThunk(
 //Async thunk to fetch single product
 export const updateProduct = createAsyncThunk(
   "/products/updateProduct",
-  async (id, productData) => {
+  async ({id, productData}) => {
     const response = await axios.put(
       `${import.meta.env.VITE_BACKEND_URL}/api/products/${id}`,
       productData,
