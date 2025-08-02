@@ -60,7 +60,7 @@ export const updateProduct = createAsyncThunk(
       productData,
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("useToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("userToken")}`,
         },
       }
     );
@@ -155,7 +155,7 @@ const productsSlice = createSlice({
       .addCase(updateProduct.fulfilled, (state, action) => {
         state.loading = false;
         const updatedProduct = action.payload;
-        const index = action.products.findIndex(
+        const index = state.products.findIndex(
           (product) => product._id === updatedProduct._id
         );
         if (index !== -1) {

@@ -8,7 +8,7 @@ const PaypalButton = (amount, onSuccess, onError) => {
      
       createOrder={(data, action) => {
         return action.order.create({
-          purchase_unit: [{ amount: { value: amount } }],
+          purchase_unit: [{ amount: { value: parseFloat(amount).toFixed(2) } }],
         });
       }}
       onApprove={(data, action) => {

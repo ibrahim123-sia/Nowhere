@@ -1,20 +1,32 @@
 import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { fetchAllOrders, updateOrderStatus } from "../../redux/slices/adminOrderSlice";
 
 const OrderManagement = () => {
 
-  const orders=[
-    {
-      _id:1231231,
-      user:{
-        name:"john doe",
-      },
-      totalprice:110,
-      status:"processing",
-    }
-  ]
+  const dispatch=useDispatch();
+  const navigate=useNavigate();
+  const {user}=useSelector((state)=>state.auth);
+  const {orders,loading,error}= useSelector((state)=>state.adminOrders);
+
+   useEffect(()=>{
+     if(user && user.role!=="admin"){
+      navigate("/")
+     }else{
+      dispatch(fetchAllOrders())
+     }
+   },[user,navigate,dispatch]);
 
   const handleStatusChange=(orderId,status)=>{
-    console.log({id:orderId,status})
+    dispatch(updateOrderStatus({id:orderId, status}))
+  }
+
+   if (loading) {
+    return <p>Loading...</p>;
+  }
+  if (error) {
+    return <>Error: {error}</>;
   }
   
   return (
@@ -43,7 +55,7 @@ const OrderManagement = () => {
                     #{order._id}
                   </td>
                   <td className="p-4">{order.user.name}</td>
-                  <td className="p-4">{order.totalprice}</td>
+                  <td className="p-4">{order.totalprice.toFixed(2)}</td>
                   <td className="p-4">
                     <select
                       value={order.status}

@@ -1,25 +1,47 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import register from '../assets/register.webp'
+import React, { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import register from "../assets/register.webp";
 import { registerUser } from "../redux/slices/authSlice";
-import { useDispatch } from "react-redux";
-
+import { useDispatch, useSelector } from "react-redux";
+import { mergeCart } from "../redux/slices/cartSlice";
 
 const Register = () => {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const dispatch=useDispatch();
 
-    const handleSubmit=(e)=>{
-        e.preventDefault();
-        dispatch(registerUser({name,email,password}))
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, guestId ,loading} = useSelector((state) => state.auth);
+  const { cart } = useSelector((state) => state.cart);
+
+  //Get redirect parameter and check if its checkout or something else
+  const redirect = new URLSearchParams(location.search).get("redirect") || "/";
+  const isCheckoutRedirect = redirect.includes("checkout");
+
+  useEffect(() => {
+    if (user) {
+      if (cart?.products.length > 0 && guestId) {
+        dispatch(mergeCart({ guestId, user })).then(() => {
+          navigate(isCheckoutRedirect ? "/checkout" : "/");
+        });
+      } else {
+        navigate(isCheckoutRedirect ? "/checkout" : "/");
+      }
     }
+  }, [user, guestId, cart, navigate, isCheckoutRedirect]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    dispatch(registerUser({ name, email, password }));
+  };
 
   return (
     <div className="flex">
       <div className="w-full md:w-1/2 flex flex-col justify-center items-center p-6 md:p-12">
-        <form onSubmit={handleSubmit}
+        <form
+          onSubmit={handleSubmit}
           action=""
           className="w-full max-w-md bg-white p-8 rounded-lg border shadow-md"
         >
@@ -51,7 +73,6 @@ const Register = () => {
               placeholder="Enter your email address"
             />
           </div>
-          
 
           <div className="mb-4">
             <label className="block text-sm font-semibold mb-2">Password</label>
@@ -64,14 +85,17 @@ const Register = () => {
             />
           </div>
           <button
-            type="submit" 
+            type="submit"
             className="w-full bg-black text-white p-2 transition rounded-lg font-semibold hover:bg-gray-800"
           >
-            Sign Up
+            {loading? "loading..." :"Sign Up"}
           </button>
           <p className="mt-6 text-center text-sm">
-            Already have an account? { }
-            <Link to="/login" className="text-blue-500">
+            Don't have an account?{" "}
+            <Link
+              to={`/login?redirect=${encodeURIComponent(redirect)}`}
+              className="text-blue-500"
+            >
               Login
             </Link>
           </p>
@@ -79,7 +103,11 @@ const Register = () => {
       </div>
       <div className="hidden md:block w-1/2 bg-gray-800">
         <div className="h-full flex flex-col justify-center items-center">
-          <img src={register} alt="Login to Account" className="h-[750px] w-full object-cover"/>
+          <img
+            src={register}
+            alt="Login to Account"
+            className="h-[750px] w-full object-cover"
+          />
         </div>
       </div>
     </div>
