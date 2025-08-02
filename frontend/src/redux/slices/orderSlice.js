@@ -4,7 +4,7 @@ import axios from "axios";
 //Async thunk to fetch user order
 export const fetchUserOrders = createAsyncThunk(
   "order/fetchUserOrders",
-  async (__DO_NOT_USE__ActionTypes, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/api/orders/my-orders`,

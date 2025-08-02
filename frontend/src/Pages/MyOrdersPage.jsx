@@ -1,46 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { data, useNavigate } from "react-router-dom";
-
+import {useDispatch, useSelector} from "react-redux"
+import {fetchUserOrders} from "../redux/slices/orderSlice"
 const MyOrdersPage = () => {
-  const [Orders, setOrders] = useState([]);
-  const navigate=useNavigate()
+  const navigate=useNavigate();
+  const dispatch=useDispatch();
+  const {orders,loading,error}=useSelector((state)=>state.orders)
 
-  useEffect(() => {
-    setTimeout(() => {
-      const mockOrder = [
-        {
-          _id: "12345",
-          createdAt: new Date(),
-          ShippingAddress: { city: "Karachi", country: "Pakistan" },
-          orderItems: [
-            {
-              name: "Products 1",
-              image: "https://picsum.photos/500/500?random=1",
-            },
-          ],
-          totalPrice: 100,
-          isPiad: true,
-        },
-        {
-            _id: "65443",
-            createdAt: new Date(),
-            ShippingAddress: { city: "Karachi", country: "Pakistan" },
-            orderItems: [
-              {
-                name: "Products 2",
-                image: "https://picsum.photos/500/500?random=2",
-              },
-            ],
-            totalPrice: 120,
-            isPiad: true,
-          },
-      ];
-      setOrders(mockOrder)
-    },1000);
-  },[]);
+  useEffect(()=>{
+    dispatch(fetchUserOrders())
+  },[dispatch])
+
 
   const handleRowClick=(orderId)=>{
     navigate(`/order/${orderId}`)
+  }
+
+   if (loading) {
+    return <p>Loading...</p>;
+  }
+  if (error) {
+    return <>Error: {error}</>;
   }
 
   return <div className="max-w-7xl mx-auto p-4 s,:p-6">
@@ -59,8 +39,8 @@ const MyOrdersPage = () => {
                 </tr>
             </thead>
             <tbody>
-                {Orders.length > 0 ?(
-                  Orders.map((order)=>(
+                {orders.length > 0 ?(
+                  orders.map((order)=>(
                     <tr key={order._id} 
                     onClick={()=>handleRowClick(order._id)}
                     className="border-b hover:border-gray-50 cursor-pointer">

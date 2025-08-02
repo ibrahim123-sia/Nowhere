@@ -1,28 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PaypalButton from "./PaypalButton";
+import { useDispatch, useSelector } from "react-redux";
+import { createCheckout } from "../../redux/slices/checkoutSlice";
 
 const Checkout = () => {
   const [checkoutId, setCheckoutId] = useState();
-  const cart = {
-    product: [
-      {
-        name: "stylish jacket",
-        size: "M",
-        color: "Black",
-        price: 120,
-        image: "https://picsum.photos/150?random=1",
-      },
-      {
-        name: "stylish jacket",
-        size: "M",
-        color: "Black",
-        price: 120,
-        image: "https://picsum.photos/150?random=2",
-      },
-    ],
-    totalPrice: 196,
-  };
+  const dispatch = useDispatch();
+  const { cart, loading, error } = useSelector((state) => state.cart);
+  const { user } = useSelector((state) => state.auth);
 
   const navigate = useNavigate();
   const [shippingAddress, setShippingAddress] = useState({
@@ -34,16 +20,82 @@ const Checkout = () => {
     country: "",
     phone: "",
   });
+  //cart is not loading before proceeding
+  useEffect(() => {
+    if (!cart || !cart.products || cart.products.length === 0) {
+      navigate("/");
+    }
+  }, [cart, navigate]);
 
-  const handlePaymentSuccess = (details) => {
-    console.log("payment successfyl", details);
-    navigate("order-confirmation");
+  const handlePaymentSuccess = async (details) => {
+    try {
+      const response = await axios.put(
+        `${import.meta.env.VITE_BACKEND_URL}/api/checkout/${checkoutId}/pay`,
+        {
+          paymentStatus: "paid",
+          paymentDetails: details,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+          },
+        }
+      );
+      
+        await handleFinalizeCheckout(checkoutId); //finalize checkout if payment successful
+    
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  const handleCreateCheckout = (e) => {
+  const handleFinalizeCheckout = async (checkoutId) => {
+    try {
+      const response = await axios.post(
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/api/checkout//${checkoutId}/finalize`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+          },
+        }
+      );
+      
+        navigate("/order-confirmation")
+     
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleCreateCheckout = async(e) => {
     e.preventDefault();
-    setCheckoutId(123);
+    if (cart && cart.products.length > 0) {
+      const res = dispatch(
+        createCheckout({
+          checkoutItems: cart.products,
+          shippingAddress,
+          paymentMethod: "Paypal",
+          totalPrice: cart.totalPrice,
+        })
+      );
+      if (res.payload && res.payload._id) {
+        setCheckoutId(res.payload._id); //set checkout id if checkout was successful
+      }
+    }
   };
+
+  if (loading) {
+    return <p>Loading cart...</p>;
+  }
+  if (error) {
+    return <>Error: {error}</>;
+  }
+  if (!cart || !cart.products || cart.products.length === 0) {
+      return <p>Your cart is empty</p>
+    }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto py-10 px-6 tracking-tighter">
@@ -56,7 +108,7 @@ const Checkout = () => {
             <label className="block text-gray-700">Email</label>
             <input
               type="email"
-              value="abc@gmail.com"
+              value={user? user.email :""}
               className="w-full p-2 border rounded "
               disabled
             />
@@ -183,7 +235,7 @@ const Checkout = () => {
               <div>
                 <h3 className="text-lg mb-4">Pay with Paypal</h3>
                 <PaypalButton
-                  amount={100}
+                  amount={cart.totalPrice}
                   onSuccess={handlePaymentSuccess}
                   onError={(err) => alert("Payment Fail. try again")}
                 />
@@ -197,13 +249,17 @@ const Checkout = () => {
       <div className="bg-gray-50 p-6 rounded-lg">
         <h3 className="text-lg mb-4">Order Summary</h3>
         <div className="border-t py-4 mb-4">
-          {cart.product.map((product, index) => (
+          {cart.products.map((product, index) => (
             <div
               key={index}
               className="flex items-start justify-between py-2 border-b"
             >
               <div className="flex items-start">
-                <img src={product.image} alt={product.image} className="w-20 h-24 object-cover mr-4"/>
+                <img
+                  src={product.image}
+                  alt={product.image}
+                  className="w-20 h-24 object-cover mr-4"
+                />
                 <div>
                   <h3 className="text-md">{product.name}</h3>
                   <p className="text-gray-500">Size: {product.size}</p>
