@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import PaypalButton from "./PaypalButton";
+import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { createCheckout } from "../../redux/slices/checkoutSlice";
 
@@ -11,108 +11,100 @@ const Checkout = () => {
   const { user } = useSelector((state) => state.auth);
 
   const navigate = useNavigate();
+
   const [shippingAddress, setShippingAddress] = useState({
     firstName: "",
     lastName: "",
-    Address: "",
-    City: "",
-    postalcode: "",
+    address: "",
+    city: "",
+    postalCode: "",
     country: "",
     phone: "",
   });
-  //cart is not loading before proceeding
+
   useEffect(() => {
     if (!cart || !cart.products || cart.products.length === 0) {
       navigate("/");
     }
   }, [cart, navigate]);
 
-  const handlePaymentSuccess = async (details) => {
-    try {
-      const response = await axios.put(
-        `${import.meta.env.VITE_BACKEND_URL}/api/checkout/${checkoutId}/pay`,
-        {
-          paymentStatus: "paid",
-          paymentDetails: details,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("userToken")}`,
-          },
-        }
-      );
-      
-        await handleFinalizeCheckout(checkoutId); //finalize checkout if payment successful
-    
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleFinalizeCheckout = async (checkoutId) => {
-    try {
-      const response = await axios.post(
-        `${
-          import.meta.env.VITE_BACKEND_URL
-        }/api/checkout//${checkoutId}/finalize`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("userToken")}`,
-          },
-        }
-      );
-      
-        navigate("/order-confirmation")
-     
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleCreateCheckout = async(e) => {
+  const handleSubmitOrder = async (e) => {
     e.preventDefault();
-    if (cart && cart.products.length > 0) {
-      const res = dispatch(
+
+    if (!cart || cart.products.length === 0) return;
+
+    try {
+      const res = await dispatch(
         createCheckout({
           checkoutItems: cart.products,
-          shippingAddress,
-          paymentMethod: "Paypal",
+          shippingAddress: {
+            fullName: `${shippingAddress.firstName} ${shippingAddress.lastName}`,
+            address: shippingAddress.address,
+            city: shippingAddress.city,
+            postalCode: shippingAddress.postalCode,
+            country: shippingAddress.country,
+            phone: shippingAddress.phone,
+          },
+          paymentMethod: "COD",
           totalPrice: cart.totalPrice,
         })
       );
+
       if (res.payload && res.payload._id) {
-        setCheckoutId(res.payload._id); //set checkout id if checkout was successful
+        const newCheckoutId = res.payload._id;
+        setCheckoutId(newCheckoutId);
+
+        await axios.put(
+          `${import.meta.env.VITE_BACKEND_URL}/api/checkout/${newCheckoutId}/pay`,
+          {
+            paymentStatus: "paid",
+            paymentDetails: { method: "Cash on Delivery" },
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+            },
+          }
+        );
+
+        await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}/api/checkout/${newCheckoutId}/finalize`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+            },
+          }
+        );
+
+        navigate("/order-confirmation");
       }
+    } catch (err) {
+      console.error("Order submission failed:", err);
     }
   };
 
-  if (loading) {
-    return <p>Loading cart...</p>;
-  }
-  if (error) {
-    return <>Error: {error}</>;
-  }
-  if (!cart || !cart.products || cart.products.length === 0) {
-      return <p>Your cart is empty</p>
-    }
+  if (loading) return <p>Loading cart...</p>;
+  if (error) return <>Error: {error}</>;
+  if (!cart || !cart.products || cart.products.length === 0) return <p>Your cart is empty</p>;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto py-10 px-6 tracking-tighter">
-      {/* left section */}
+      {/* Left section */}
       <div className="bg-white rounded-lg p-6">
         <h2 className="text-2xl uppercase mb-6">Checkout</h2>
-        <form onSubmit={handleCreateCheckout}>
+        <form onSubmit={handleSubmitOrder}>
           <h3 className="text-lg mb-4">Contact Detail</h3>
           <div className="mb-4">
             <label className="block text-gray-700">Email</label>
             <input
               type="email"
-              value={user? user.email :""}
+              value={user ? user.email : ""}
               className="w-full p-2 border rounded "
               disabled
             />
           </div>
+
           <h3 className="text-lg mb-4">Delivery</h3>
           <div className="mb-4 grid grid-cols-2 gap-4">
             <div>
@@ -123,10 +115,7 @@ const Checkout = () => {
                 required
                 value={shippingAddress.firstName}
                 onChange={(e) =>
-                  setShippingAddress({
-                    ...shippingAddress,
-                    firstName: e.target.value,
-                  })
+                  setShippingAddress({ ...shippingAddress, firstName: e.target.value })
                 }
               />
             </div>
@@ -138,29 +127,25 @@ const Checkout = () => {
                 required
                 value={shippingAddress.lastName}
                 onChange={(e) =>
-                  setShippingAddress({
-                    ...shippingAddress,
-                    lastName: e.target.value,
-                  })
+                  setShippingAddress({ ...shippingAddress, lastName: e.target.value })
                 }
               />
             </div>
           </div>
+
           <div className="mb-4">
             <label className="block text-gray-700">Address</label>
             <input
               type="text"
-              value={shippingAddress.Address}
+              value={shippingAddress.address}
               onChange={(e) =>
-                setShippingAddress({
-                  ...shippingAddress,
-                  Address: e.target.value,
-                })
+                setShippingAddress({ ...shippingAddress, address: e.target.value })
               }
               className="w-full p-2 border rounded"
               required
             />
           </div>
+
           <div className="mb-2 grid grid-cols-2 gap-4">
             <div>
               <label className="block text-gray-700">City</label>
@@ -168,12 +153,9 @@ const Checkout = () => {
                 type="text"
                 className="w-full p-2 border rounded"
                 required
-                value={shippingAddress.City}
+                value={shippingAddress.city}
                 onChange={(e) =>
-                  setShippingAddress({
-                    ...shippingAddress,
-                    City: e.target.value,
-                  })
+                  setShippingAddress({ ...shippingAddress, city: e.target.value })
                 }
               />
             </div>
@@ -183,69 +165,49 @@ const Checkout = () => {
                 type="text"
                 className="w-full p-2 border rounded"
                 required
-                value={shippingAddress.postalcode}
+                value={shippingAddress.postalCode}
                 onChange={(e) =>
-                  setShippingAddress({
-                    ...shippingAddress,
-                    postalcode: e.target.value,
-                  })
+                  setShippingAddress({ ...shippingAddress, postalCode: e.target.value })
                 }
               />
             </div>
           </div>
+
           <div className="mb-4">
             <label className="block text-gray-700">Country</label>
             <input
               type="text"
               value={shippingAddress.country}
               onChange={(e) =>
-                setShippingAddress({
-                  ...shippingAddress,
-                  country: e.target.value,
-                })
+                setShippingAddress({ ...shippingAddress, country: e.target.value })
               }
               className="w-full p-2 border rounded"
               required
             />
           </div>
+
           <div className="mb-4">
             <label className="block text-gray-700">Phone</label>
             <input
               type="tel"
               value={shippingAddress.phone}
               onChange={(e) =>
-                setShippingAddress({
-                  ...shippingAddress,
-                  phone: e.target.value,
-                })
+                setShippingAddress({ ...shippingAddress, phone: e.target.value })
               }
               className="w-full p-2 border rounded"
               required
             />
           </div>
+
           <div className="mb-6">
-            {!checkoutId ? (
-              <button
-                type="submit"
-                className="w-full bg-black text-white py-3 rounded"
-              >
-                Continue to payment
-              </button>
-            ) : (
-              <div>
-                <h3 className="text-lg mb-4">Pay with Paypal</h3>
-                <PaypalButton
-                  amount={cart.totalPrice}
-                  onSuccess={handlePaymentSuccess}
-                  onError={(err) => alert("Payment Fail. try again")}
-                />
-              </div>
-            )}
+            <button type="submit" className="w-full bg-black text-white py-3 rounded">
+              Confirm your order
+            </button>
           </div>
         </form>
       </div>
 
-      {/* right section */}
+      {/* Right section */}
       <div className="bg-gray-50 p-6 rounded-lg">
         <h3 className="text-lg mb-4">Order Summary</h3>
         <div className="border-t py-4 mb-4">
