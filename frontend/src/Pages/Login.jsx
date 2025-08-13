@@ -74,7 +74,6 @@ const Login = () => {
             type="submit"
             className="w-full bg-black text-white p-2 transition rounded-lg font-semibold hover:bg-gray-800"
           > {loading ? "loading...":"Sign In"}
-            Sign In
           </button>
           <p className="mt-6 text-center text-sm">
             Don't have an account? {}

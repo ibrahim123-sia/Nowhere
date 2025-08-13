@@ -53,7 +53,7 @@ const checkoutSchema = new mongoose.Schema(
     },
     isPaid: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     paidAt: {
       type: Date,

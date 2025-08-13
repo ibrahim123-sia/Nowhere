@@ -1,6 +1,10 @@
 const express = require("express");
-const cors = require("cors");
 const dotenv = require("dotenv");
+dotenv.config();
+console.log("EMAIL_USER from env:", process.env.EMAIL_USER); // test
+
+const cors = require("cors");
+
 const connectDB = require("./config/db");
 const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes");
@@ -16,7 +20,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-dotenv.config();
+
 
 const PORT = process.env.PORT || 9000;
 
