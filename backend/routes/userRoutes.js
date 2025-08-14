@@ -100,7 +100,7 @@ router.post("/register", otpLimiter, async (req, res) => {
     // Send OTP via email
     try {
       await transporter.sendMail({
-        from: `"Your App Name" <${process.env.EMAIL_USER}>`,
+        from: `"Nowhere" <${process.env.EMAIL_USER}>`,
         to: email,
         subject: "Your OTP Verification Code",
         html: `
@@ -147,7 +147,7 @@ router.post("/verify-otp", async (req, res) => {
   const cleanOtp = otp?.trim();
 
   if (!email || !cleanOtp) {
-    console.log("Missing fields:", { email, otp: cleanOtp }); // Add this
+    
     return res.status(400).json({
       message: "Email and OTP are required",
       received: { email, otp: cleanOtp }, // Include what was received
@@ -156,11 +156,7 @@ router.post("/verify-otp", async (req, res) => {
 
   try {
     const user = await User.findOne({ email }).select("+otp +otpExpires");
-    console.log("Found user:", {
-      storedOtp: user?.otp,
-      storedExpiry: user?.otpExpires,
-      isVerified: user?.isVerified,
-    });
+   
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -220,7 +216,7 @@ router.post("/verify-otp", async (req, res) => {
       }
     );
   } catch (err) {
-    console.error("Verification error:", err);
+    
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -370,3 +366,125 @@ router.get("/profile", protect, async (req, res) => {
 });
 
 module.exports = router;
+
+
+
+
+// ... (previous imports remain the same)
+
+// @route   POST /api/users/forgot-password
+// @desc    Send OTP for password reset
+// @access  Public
+// ... existing imports ...
+
+router.post("/forgot-password", otpLimiter, async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ 
+      success: false,
+      message: "Email is required" 
+    });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      // Don't reveal if user exists or not for security
+      return res.json({ 
+        success: true,
+        message: "If an account exists, an OTP has been sent to your email"
+      });
+    }
+
+    const otp = generateOtp();
+    const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    user.resetPasswordOtp = otp;
+    user.resetPasswordExpires = otpExpires;
+    await user.save();
+
+    // Send email
+    await transporter.sendMail({
+      from: `"Nowhere" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Password Reset OTP",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #333;">Password Reset Request</h2>
+          <p>Hello ${user.name},</p>
+          <p>Your OTP for password reset is:</p>
+          <div style="background: #f5f5f5; padding: 20px; text-align: center; margin: 20px 0; border-radius: 5px;">
+            <h1 style="margin: 0; color: #2c3e50; letter-spacing: 5px; font-size: 28px;">${otp}</h1>
+          </div>
+          <p>This code will expire in 5 minutes.</p>
+          <p style="font-size: 12px; color: #7f8c8d;">
+            If you didn't request this, please ignore this email.
+          </p>
+        </div>
+      `
+    });
+
+    res.json({ 
+      success: true,
+      message: "OTP has been sent to your email"
+    });
+
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "Server error" 
+    });
+  }
+});
+
+// ... rest of the file remains the same ...
+
+// @route   POST /api/users/reset-password
+// @desc    Reset password with OTP
+// @access  Public
+router.post("/reset-password", async (req, res) => {
+  const { email, otp, newPassword } = req.body; // Note: confirmPassword is only for frontend validation
+
+  if (!email || !otp || !newPassword) {
+    return res.status(400).json({ 
+      success: false,
+      message: "All fields are required" 
+    });
+  }
+
+  try {
+    const user = await User.findOne({ email }).select("+resetPasswordOtp +resetPasswordExpires");
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Verify OTP
+    if (user.resetPasswordOtp !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    if (user.resetPasswordExpires < new Date()) {
+      return res.status(400).json({ message: "OTP expired" });
+    }
+
+    // Update password
+    user.password = newPassword;
+    user.resetPasswordOtp = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.json({ 
+      success: true,
+      message: "Password reset successfully"
+    });
+
+  } catch (error) {
+    console.error("Reset password error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ... (rest of the existing routes remain the same)

@@ -54,7 +54,7 @@ const Register = () => {
 
   const handleVerifyOtp = (e) => {
   e.preventDefault();
-  console.log("Verifying OTP with:", { email, otp }); // Add this line
+ 
   dispatch(verifyOtp({ email, otp }));
 };
 
