@@ -1,37 +1,44 @@
-const express=require("express")
-const router=express.Router();
-const Subscriber=require("../models/Subscriber")
+const express = require("express");
+const router = express.Router();
+const Subscriber = require("../models/Subscriber");
 
 //@route POST /api/subscribe
-//@desc handle news letter subscription
-//@access public
+//@desc Handle newsletter subscription
+//@access Public
+router.post("/subscribe", async (req, res) => {
+  const { email } = req.body;
 
-router.post("/subscribe",async(req,res)=>{
-    const {email}=req.body
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
 
-    if(!email){
-        return res.status(400).json({message:"Email is required"})
+  try {
+    // Normalize email by trimming and converting to lowercase
+    const normalizedEmail = email.trim().toLowerCase();
+    
+    // Check if the email is already subscribed
+    const existingSubscriber = await Subscriber.findOne({ email: normalizedEmail });
+
+    if (existingSubscriber) {
+      return res.status(409).json({ 
+        message: "This email is already subscribed",
+        alreadySubscribed: true 
+      });
     }
-    try{
-        //check if the email is already subscribe
 
-        let subscriber=await Subscriber.findOne({email});
+    // Create new subscriber
+    const subscriber = new Subscriber({ email: normalizedEmail });
+    await subscriber.save();
+    
+    res.status(201).json({ 
+      message: "Thank you for subscribing!",
+      alreadySubscribed: false
+    });
 
-        if(subscriber){
-            return res.status(400).json({message:"Email is already subscribe"})
-        }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
-        //create new subscriber
-        subscriber=new Subscriber({email});
-        await subscriber.save();
-        res.status(201).json({message:"Successfully"})
-
-    }
-    catch(error){
-        console.error(error)
-        res.status(500).json({message:"Server error"})
-
-    }
-})
-
-module.exports=router
+module.exports = router;

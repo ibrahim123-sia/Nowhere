@@ -4,6 +4,7 @@ import registerImg from "../assets/register.webp";
 import { registerUser, verifyOtp, resetOtpState } from "../redux/slices/authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { mergeCart } from "../redux/slices/cartSlice";
+import { toast } from 'react-toastify';
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -34,13 +35,22 @@ const Register = () => {
     return () => clearTimeout(timer);
   }, [resendDisabled, resendTimer]);
 
+  // Show error toast when there's an error
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
   useEffect(() => {
     if (user) {
       if (cart?.products.length > 0 && guestId) {
         dispatch(mergeCart({ guestId, user })).then(() => {
+          toast.success("Account created successfully!");
           navigate(isCheckoutRedirect ? "/checkout" : "/");
         });
       } else {
+        toast.success("Account created successfully!");
         navigate(isCheckoutRedirect ? "/checkout" : "/");
       }
     }
@@ -48,23 +58,45 @@ const Register = () => {
 
   const handleRegister = (e) => {
     e.preventDefault();
-    dispatch(registerUser({ name, email, password }));
-    setResendDisabled(true);
+    dispatch(registerUser({ name, email, password }))
+      .unwrap()
+      .then(() => {
+        toast.success("OTP sent to your email!");
+        setResendDisabled(true);
+      })
+      .catch((err) => {
+        toast.error(err.message || "Failed to send OTP");
+      });
   };
 
   const handleVerifyOtp = (e) => {
-  e.preventDefault();
- 
-  dispatch(verifyOtp({ email, otp }));
-};
+    e.preventDefault();
+    dispatch(verifyOtp({ email, otp }))
+      .unwrap()
+      .then(() => {
+        
+      })
+      .catch((err) => {
+        toast.error(err.message || "OTP verification failed");
+      });
+  };
 
   const handleResendOtp = () => {
     dispatch(registerUser({ name, email, password }))
       .unwrap()
       .then(() => {
+        toast.success("New OTP sent to your email!");
         setResendDisabled(true);
         setResendTimer(30);
+      })
+      .catch((err) => {
+        toast.error(err.message || "Failed to resend OTP");
       });
+  };
+
+  const handleResetOtpState = () => {
+    dispatch(resetOtpState());
+    toast.info("You can now register again");
   };
 
   return (
@@ -76,11 +108,6 @@ const Register = () => {
             className="w-full max-w-md bg-white p-8 rounded-lg border shadow-md"
           >
             <h2 className="text-2xl font-bold text-center mb-6">Sign Up</h2>
-            {error && (
-              <div className="mb-4 text-red-500 text-center text-sm">
-                {error}
-              </div>
-            )}
             <div className="mb-4">
               <label className="block text-sm font-semibold mb-2">Name</label>
               <input
@@ -129,11 +156,6 @@ const Register = () => {
             className="w-full max-w-md bg-white p-8 rounded-lg border shadow-md"
           >
             <h2 className="text-2xl font-bold text-center mb-6">Verify OTP</h2>
-            {error && (
-              <div className="mb-4 text-red-500 text-center text-sm">
-                {error}
-              </div>
-            )}
             <p className="mb-4 text-center text-sm">
               OTP sent to <strong>{email}</strong>
             </p>
@@ -171,7 +193,7 @@ const Register = () => {
             </div>
             <button 
               type="button" 
-              onClick={() => dispatch(resetOtpState())}
+              onClick={handleResetOtpState}
               className="mt-2 text-sm text-gray-500 hover:underline w-full text-center"
             >
               Back to Registration
