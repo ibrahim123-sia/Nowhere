@@ -28,6 +28,7 @@ import FAQPage from "./components/Common/Support/FAQPage";
 import AboutUsPage from "./components/Common/Support/AboutUsPage";
 import FeaturesPage from "./components/Common/Support/FeaturesPage";
 import ContactUsPage from "./components/Common/Support/ContactUsPage";
+import AddProductPage from "./components/Admin/AddProductPage";
 const App = () => {
   return (
     <Provider store={store}>
@@ -70,6 +71,7 @@ const App = () => {
             <Route path="products" element={<ProductManagement />} />
             <Route path="product/:id/edit" element={<EditProductPage />} />
             <Route path="orders" element={<OrderManagement />} />
+            <Route path="product/new" element={<AddProductPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
