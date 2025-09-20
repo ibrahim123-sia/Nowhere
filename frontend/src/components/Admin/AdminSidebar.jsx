@@ -1,18 +1,23 @@
 import React from "react";
-import { FaBoxOpen, FaClipboardList, FaSignOutAlt, FaStore, FaUser } from "react-icons/fa";
+import {
+  FaBoxOpen,
+  FaClipboardList,
+  FaSignOutAlt,
+  FaStore,
+  FaUser,
+} from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { logout } from "../../redux/slices/authSlice"
-import { clearCart } from "../../redux/slices/cartSlice"
-
+import { logout } from "../../redux/slices/authSlice";
+import { clearCart } from "../../redux/slices/cartSlice";
 
 const AdminSidebar = () => {
   const navigate = useNavigate();
-  const dispatch=useDispatch()
+  const dispatch = useDispatch();
 
   const handleLogout = () => {
     dispatch(logout());
-    dispatch(clearCart())
+    dispatch(clearCart());
     navigate("/");
   };
 
@@ -28,7 +33,20 @@ const AdminSidebar = () => {
 
       <nav className="flex flex-col space-y-2">
         <NavLink
-          to="/admin/users"
+          to="" // Dashboard
+          end
+          className={({ isActive }) =>
+            isActive
+              ? "bg-gray-700 text-white py-3 px-4 rounded flex items-center space-x-2"
+              : "text-gray-300 hover:bg-gray-700 hover:text-white py-3 px-4 rounded flex items-center space-x-2"
+          }
+        >
+          <FaUser />
+          <span>Dashboard</span>
+        </NavLink>
+
+        <NavLink
+          to="users"
           className={({ isActive }) =>
             isActive
               ? "bg-gray-700 text-white py-3 px-4 rounded flex items-center space-x-2"
@@ -40,7 +58,7 @@ const AdminSidebar = () => {
         </NavLink>
 
         <NavLink
-          to="/admin/products"
+          to="products"
           className={({ isActive }) =>
             isActive
               ? "bg-gray-700 text-white py-3 px-4 rounded flex items-center space-x-2"
@@ -52,7 +70,7 @@ const AdminSidebar = () => {
         </NavLink>
 
         <NavLink
-          to="/admin/orders"
+          to="orders"
           className={({ isActive }) =>
             isActive
               ? "bg-gray-700 text-white py-3 px-4 rounded flex items-center space-x-2"
