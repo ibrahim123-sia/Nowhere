@@ -4,7 +4,7 @@ import registerImg from "../assets/register.webp";
 import { registerUser, verifyOtp, resetOtpState } from "../redux/slices/authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { mergeCart } from "../redux/slices/cartSlice";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -23,7 +23,12 @@ const Register = () => {
   const redirect = new URLSearchParams(location.search).get("redirect") || "/";
   const isCheckoutRedirect = redirect.includes("checkout");
 
-  // Resend OTP timer
+  // Styling constants - updated to match the login theme
+  const formWrapper = "w-full max-w-md bg-gradient-to-br from-white to-gray-50 p-8 rounded-2xl shadow-xl border border-gray-100";
+  const inputClass = "w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 shadow-sm";
+  const buttonPrimary = "w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white p-3 rounded-lg font-medium transition duration-200 shadow-md hover:shadow-lg";
+  const linkBtn = "text-indigo-600 hover:text-indigo-800 transition text-sm font-medium";
+
   useEffect(() => {
     let timer;
     if (resendDisabled && resendTimer > 0) {
@@ -35,7 +40,6 @@ const Register = () => {
     return () => clearTimeout(timer);
   }, [resendDisabled, resendTimer]);
 
-  // Show error toast when there's an error
   useEffect(() => {
     if (error) {
       toast.error(error);
@@ -73,9 +77,6 @@ const Register = () => {
     e.preventDefault();
     dispatch(verifyOtp({ email, otp }))
       .unwrap()
-      .then(() => {
-        
-      })
       .catch((err) => {
         toast.error(err.message || "OTP verification failed");
       });
@@ -100,113 +101,124 @@ const Register = () => {
   };
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="w-full md:w-1/2 flex flex-col justify-center items-center p-6 md:p-12">
         {!otpSent ? (
-          <form
-            onSubmit={handleRegister}
-            className="w-full max-w-md bg-white p-8 rounded-lg border shadow-md"
-          >
-            <h2 className="text-2xl font-bold text-center mb-6">Sign Up</h2>
-            <div className="mb-4">
-              <label className="block text-sm font-semibold mb-2">Name</label>
+          <form onSubmit={handleRegister} className={formWrapper}>
+            <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">Create Account</h2>
+            <div className="mb-5">
+              <label className="block text-sm font-medium mb-2 text-gray-600">Full Name</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full p-2 border rounded"
-                placeholder="Enter your name"
+                className={inputClass}
+                placeholder="Enter your full name"
                 required
               />
             </div>
-            <div className="mb-4">
-              <label className="block text-sm font-semibold mb-2">Email</label>
+            <div className="mb-5">
+              <label className="block text-sm font-medium mb-2 text-gray-600">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 border rounded"
+                className={inputClass}
                 placeholder="Enter your email"
                 required
               />
             </div>
-            <div className="mb-4">
-              <label className="block text-sm font-semibold mb-2">Password</label>
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2 text-gray-600">Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-2 border rounded"
-                placeholder="Enter your password"
+                className={inputClass}
+                placeholder="Create a password (min 6 characters)"
                 minLength="6"
                 required
               />
             </div>
-            <button
-              type="submit"
-              className="w-full bg-black text-white p-2 rounded-lg font-semibold"
-              disabled={loading}
-            >
-              {loading ? "Sending OTP..." : "Sign Up"}
+            <button type="submit" className={buttonPrimary} disabled={loading}>
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Processing...
+                </span>
+              ) : "Sign Up"}
             </button>
+            <p className="mt-6 text-center text-sm text-gray-500">
+              Already have an account?{" "}
+              <Link
+                to={`/login?redirect=${encodeURIComponent(redirect)}`}
+                className="text-indigo-600 hover:text-indigo-800 font-medium hover:underline"
+              >
+                Login here
+              </Link>
+            </p>
           </form>
         ) : (
-          <form
-            onSubmit={handleVerifyOtp}
-            className="w-full max-w-md bg-white p-8 rounded-lg border shadow-md"
-          >
-            <h2 className="text-2xl font-bold text-center mb-6">Verify OTP</h2>
-            <p className="mb-4 text-center text-sm">
-              OTP sent to <strong>{email}</strong>
+          <form onSubmit={handleVerifyOtp} className={formWrapper}>
+            <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">Verify Email</h2>
+            <p className="mb-5 text-center text-sm text-gray-500">
+              We sent a 6-digit code to <span className="font-medium text-indigo-600">{email}</span>
             </p>
-            <input
-              type="text"
-              value={otp}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (/^\d{0,6}$/.test(value)) {
-                  setOtp(value);
-                }
-              }}
-              maxLength={6}
-              className="w-full p-2 border rounded mb-4"
-              placeholder="Enter 6-digit OTP"
-              autoFocus
-              required
-            />
-            <button
-              type="submit"
-              className="w-full bg-black text-white p-2 rounded-lg font-semibold"
-              disabled={loading}
-            >
-              {loading ? "Verifying..." : "Verify"}
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2 text-gray-600">Verification Code</label>
+              <input
+                type="text"
+                value={otp}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (/^\d{0,6}$/.test(value)) {
+                    setOtp(value);
+                  }
+                }}
+                maxLength={6}
+                className={inputClass}
+                placeholder="Enter 6-digit code"
+                autoFocus
+                required
+              />
+            </div>
+            <button type="submit" className={buttonPrimary} disabled={loading}>
+              {loading ? "Verifying..." : "Verify Account"}
             </button>
             <div className="mt-4 text-center">
               <button
                 type="button"
                 onClick={handleResendOtp}
                 disabled={resendDisabled}
-                className={`text-sm ${resendDisabled ? 'text-gray-400' : 'text-blue-500 hover:underline'}`}
+                className={`text-sm ${resendDisabled ? "text-gray-400" : "text-indigo-600 hover:underline font-medium"}`}
               >
-                {resendDisabled ? `Resend OTP in ${resendTimer}s` : "Resend OTP"}
+                {resendDisabled ? `Resend code in ${resendTimer}s` : "Resend verification code"}
               </button>
             </div>
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={handleResetOtpState}
-              className="mt-2 text-sm text-gray-500 hover:underline w-full text-center"
+              className="mt-4 text-sm text-gray-500 hover:text-gray-700 hover:underline w-full text-center"
             >
-              Back to Registration
+              Use a different email
             </button>
           </form>
         )}
       </div>
-      <div className="hidden md:block w-1/2 bg-gray-800">
+      <div className="hidden md:block w-1/2 relative overflow-hidden">
         <img
           src={registerImg}
           alt="Register"
-          className="h-[750px] w-full object-cover"
+          className="h-full w-full object-cover"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/70 to-indigo-500/40"></div>
+        <div className="absolute bottom-10 left-10 text-white">
+          <h1 className="text-4xl font-bold mb-2">Join Us</h1>
+          <p className="text-lg opacity-90">Create an account to unlock exclusive features</p>
+        </div>
       </div>
     </div>
   );
