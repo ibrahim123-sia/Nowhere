@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 const FilterSidebar = () => {
-  const [searchParams, setsearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [filter, setFilter] = useState({
     category: "",
@@ -15,24 +15,24 @@ const FilterSidebar = () => {
     maxPrice: 100,
   });
   const [priceRange, setPriceRange] = useState([0, 100]);
+  
   const categories = ["Top Wear", "Bottom Wear"];
   const colors = [
-    "Red",
-    "Blue",
-    "Black",
-    "Green",
-    "Yellow",
-    "Gray",
-    "White",
-    "Pink",
-    "Biege",
-    "Navy",
+    { name: "Red", value: "bg-red-500" },
+    { name: "Blue", value: "bg-blue-500" },
+    { name: "Black", value: "bg-gray-900" },
+    { name: "Green", value: "bg-green-500" },
+    { name: "Yellow", value: "bg-yellow-400" },
+    { name: "Gray", value: "bg-gray-500" },
+    { name: "White", value: "bg-white border border-gray-300" },
+    { name: "Pink", value: "bg-pink-400" },
+    { name: "Beige", value: "bg-amber-100" },
+    { name: "Navy", value: "bg-blue-800" }
   ];
-  const sizes = ["XS", "S", "L", "XL", "XXL"];
-  const material = ["Cotton", "Wool", "Denim", "Polyester", "Silk", "Lenin"];
-  const brand = ["Urban Threads", "Sodern Fit", "Street Style"];
+  const sizes = ["XS", "S", "M", "L", "XL", "XXL"];
+  const materials = ["Cotton", "Wool", "Denim", "Polyester", "Silk", "Linen"];
+  const brands = ["Urban Threads", "Sodern Fit", "Street Style"];
   const genders = ["Men", "Women"];
-  // x.com/?a=1&b=2
 
   useEffect(() => {
     const params = Object.fromEntries([...searchParams]);
@@ -83,145 +83,175 @@ const FilterSidebar = () => {
         params.append(key, newFilters[key]);
       }
     });
-    setsearchParams(params);
+    setSearchParams(params);
     navigate(`?${params.toString()}`);
   };
 
+  const FilterSection = ({ title, children }) => (
+    <div className="mb-8 pb-6 border-b border-gray-100 last:border-0">
+      <h4 className="text-sm font-semibold text-gray-800 uppercase tracking-wider mb-4">
+        {title}
+      </h4>
+      {children}
+    </div>
+  );
+
   return (
-    <div className="p-4 ">
-      <h3 className="text-xl font-medium text-gray-800 mb-4">Filters</h3>
+    <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-xl font-bold text-gray-900">Filters</h3>
+        <button 
+          onClick={() => {
+            setFilter({
+              category: "",
+              gender: "",
+              color: "",
+              size: [],
+              material: [],
+              brand: [],
+              minPrice: 0,
+              maxPrice: 100,
+            });
+            setPriceRange([0, 100]);
+            navigate(window.location.pathname);
+          }}
+          className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+        >
+          Clear all
+        </button>
+      </div>
+      
       {/* Category Filter */}
-      <div className="mb-6">
-        <label className="block text-gray-600 font-medium mb-2">Category</label>
-        {categories.map((category) => (
-          <div key={category} className="flex items-center mb-1">
-            <input
-              checked={filter.category === category}
-              value={category}
-              type="radio"
-              name="category"
-              className=" mr-2 h-4 w-4 text-blue-500 focus:ring-blue-400 border-e-gray-300"
-              onChange={handleFilterChange}
-            />
-            <span className="text-gray-700">{category}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Gender Filter */}
-      <div className="mb-6">
-        <label className="block text-gray-600 font-medium mb-2">Gender</label>
-        {genders.map((gender) => (
-          <div key={gender} className="flex items-center mb-1">
-            <input
-              value={gender}
-              type="radio"
-              name="gender"
-              checked={filter.gender === gender}
-              className="mr-2 h-4 w-4 text-blue-500 focus:ring-blue-400 border-e-gray-300"
-              onChange={handleFilterChange}
-            />
-            <span className=" text-gray-700">{gender}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* color filter */}
-      <div className="mb-6 ">
-        <label className="block text-gray-600 font-medium mb-2">Color</label>
-        <div className="flex flex-wrap gap-2 ">
-          {colors.map((color) => (
-            <button
-              value={color}
-              onClick={handleFilterChange}
-              key={color}
-              name="color"
-              className={`w-8 h-8 rounded-full border-gray-300 cursor-pointer
-              transition hover:scale-105 ${
-                filter.color === color ? "ring-2 ring-blue-500" : ""
-              }`}
-              style={{ backgroundColor: color.toLowerCase() }}
-            ></button>
+      <FilterSection title="Category">
+        <div className="space-y-3">
+          {categories.map((category) => (
+            <label key={category} className="flex items-center space-x-3 cursor-pointer group">
+              <div className={`flex items-center justify-center h-4 w-4 rounded-full border ${filter.category === category ? 'border-indigo-600 bg-indigo-600' : 'border-gray-300 group-hover:border-indigo-400'}`}>
+                {filter.category === category && (
+                  <div className="h-2 w-2 rounded-full bg-white"></div>
+                )}
+              </div>
+              <span className="text-sm text-gray-700 group-hover:text-gray-900">{category}</span>
+            </label>
           ))}
         </div>
-      </div>
+      </FilterSection>
 
-      {/* size filter */}
-      <div className="mb-6">
-        <label className="block text-gray-600 font-medium mb-2">Sizes</label>
-        {sizes.map((size) => (
-          <div key={size} className="flex items-center mb-1">
-            <input
-              value={size}
-              checked={filter.size.includes(size)}
-              onChange={handleFilterChange}
-              type="checkbox"
-              name="size"
-              className="mr-2 h-4 w-4 text-blue-500
-                focus:ring-blue-400 border-gray-300"
-            />
-            <span className="text-gray-700">{size}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* material filter */}
-      <div className="mb-6">
-        <label className="block text-gray-600 font-medium mb-2">Material</label>
-        {material.map((material) => (
-          <div key={material} className="flex items-center mb-1">
-            <input
-              value={material}
-              checked={filter.material.includes(material)}
-              onChange={handleFilterChange}
-              type="checkbox"
-              name="material"
-              className="mr-2 h-4 w-4 text-blue-500
-                focus:ring-blue-400 border-gray-300"
-            />
-            <span className="text-gray-700">{material}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* brand filter */}
-      <div className="mb-6">
-        <label className="block text-gray-600 font-medium mb-2">Brands</label>
-        {brand.map((brand) => (
-          <div key={brand} className="flex items-center mb-1">
-            <input
-              value={brand}
-              checked={filter.brand.includes(brand)}
-              onChange={handleFilterChange}
-              type="checkbox"
-              name="brand"
-              className="mr-2 h-4 w-4 text-blue-500
-                focus:ring-blue-400 border-gray-300"
-            />
-            <span className="text-gray-700">{brand}</span>
-          </div>
-        ))}
-      </div>
-      {/* price filter */}
-      <div className="mb-6">
-        <label className="block text-gray-600 font-medium mb-2">
-          Price Range
-        </label>
-
-        <input
-          value={priceRange[1]}
-          onChange={handlePriceChange}
-          type="range"
-          name="priceRange"
-          min={0}
-          max={100}
-          className="w-full h-2 bg-gray-300 rouned-lg  appearance-none cursor-pointer"
-        />
-        <div className="flex justify-between text-gray-600 mt-2">
-          <span>$0</span>
-          <span>${priceRange[1]}</span>
+      {/* Gender Filter */}
+      <FilterSection title="Gender">
+        <div className="space-y-3">
+          {genders.map((gender) => (
+            <label key={gender} className="flex items-center space-x-3 cursor-pointer group">
+              <div className={`flex items-center justify-center h-4 w-4 rounded-full border ${filter.gender === gender ? 'border-indigo-600 bg-indigo-600' : 'border-gray-300 group-hover:border-indigo-400'}`}>
+                {filter.gender === gender && (
+                  <div className="h-2 w-2 rounded-full bg-white"></div>
+                )}
+              </div>
+              <span className="text-sm text-gray-700 group-hover:text-gray-900">{gender}</span>
+            </label>
+          ))}
         </div>
-      </div>
+      </FilterSection>
+
+      {/* Color Filter */}
+      <FilterSection title="Color">
+        <div className="flex flex-wrap gap-2">
+          {colors.map((color) => (
+            <button
+              key={color.name}
+              name="color"
+              value={color.name}
+              onClick={handleFilterChange}
+              className={`w-8 h-8 rounded-full transition-all duration-200 hover:scale-110 ${color.value} ${
+                filter.color === color.name ? "ring-2 ring-offset-2 ring-indigo-500" : "ring-1 ring-gray-200"
+              }`}
+              aria-label={color.name}
+            />
+          ))}
+        </div>
+      </FilterSection>
+
+      {/* Size Filter */}
+      <FilterSection title="Size">
+        <div className="grid grid-cols-3 gap-2">
+          {sizes.map((size) => (
+            <label key={size} className="flex items-center justify-center cursor-pointer">
+              <input
+                type="checkbox"
+                name="size"
+                value={size}
+                checked={filter.size.includes(size)}
+                onChange={handleFilterChange}
+                className="hidden"
+              />
+              <div className={`w-full py-2 text-center text-sm rounded-md border ${
+                filter.size.includes(size) 
+                  ? 'border-indigo-600 bg-indigo-50 text-indigo-700' 
+                  : 'border-gray-200 hover:border-indigo-300 text-gray-700'
+              }`}>
+                {size}
+              </div>
+            </label>
+          ))}
+        </div>
+      </FilterSection>
+
+      {/* Material Filter */}
+      <FilterSection title="Material">
+        <div className="space-y-3">
+          {materials.map((material) => (
+            <label key={material} className="flex items-center space-x-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                name="material"
+                value={material}
+                checked={filter.material.includes(material)}
+                onChange={handleFilterChange}
+                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              />
+              <span className="text-sm text-gray-700 group-hover:text-gray-900">{material}</span>
+            </label>
+          ))}
+        </div>
+      </FilterSection>
+
+      {/* Brand Filter */}
+      <FilterSection title="Brand">
+        <div className="space-y-3">
+          {brands.map((brand) => (
+            <label key={brand} className="flex items-center space-x-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                name="brand"
+                value={brand}
+                checked={filter.brand.includes(brand)}
+                onChange={handleFilterChange}
+                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              />
+              <span className="text-sm text-gray-700 group-hover:text-gray-900">{brand}</span>
+            </label>
+          ))}
+        </div>
+      </FilterSection>
+
+      {/* Price Filter */}
+      <FilterSection title="Price Range">
+        <div className="px-2">
+          <input
+            type="range"
+            name="priceRange"
+            min="0"
+            max="100"
+            value={priceRange[1]}
+            onChange={handlePriceChange}
+            className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-indigo-600"
+          />
+          <div className="flex justify-between mt-3 text-sm text-gray-600">
+            <span>$0</span>
+            <span>${priceRange[1]}</span>
+          </div>
+        </div>
+      </FilterSection>
     </div>
   );
 };
