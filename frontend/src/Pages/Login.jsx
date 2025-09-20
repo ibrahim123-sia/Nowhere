@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import login from "../assets/login.webp";
+import login from "../assets/login.jpg";
 import { toast } from 'react-toastify';
 import {
   loginUser,
@@ -209,7 +209,7 @@ const Login = () => {
       </div>
       <div className="hidden md:block w-1/2 relative overflow-hidden">
         <img src={login} alt="Login" className="h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/70 to-indigo-500/40"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-indigo-500/70 to-indigo-200/40"></div>
         <div className="absolute bottom-10 left-10 text-white">
           <h1 className="text-4xl font-bold mb-2">Welcome</h1>
           <p className="text-lg opacity-90">Sign in to access your personalized dashboard</p>

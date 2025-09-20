@@ -1,5 +1,5 @@
 import React from 'react'
-import HeroImg from '../../assets/rabbit-hero.webp'
+import HeroImg from '../../assets/rabbit-hero.jpg'
 import { Link } from 'react-router-dom'
 
 const Hero = () => {

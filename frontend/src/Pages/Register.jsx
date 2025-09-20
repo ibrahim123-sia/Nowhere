@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import registerImg from "../assets/register.webp";
+import registerImg from "../assets/register.jpg";
 import { registerUser, verifyOtp, resetOtpState } from "../redux/slices/authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { mergeCart } from "../redux/slices/cartSlice";
@@ -214,7 +214,7 @@ const Register = () => {
           alt="Register"
           className="h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/70 to-indigo-500/40"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-indigo-500/70 to-indigo-200/40"></div>
         <div className="absolute bottom-10 left-10 text-white">
           <h1 className="text-4xl font-bold mb-2">Join Us</h1>
           <p className="text-lg opacity-90">Create an account to unlock exclusive features</p>
