@@ -6,9 +6,10 @@ import ProductGrid from "../components/Product/ProductGrid";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProductsByFilters } from "../redux/slices/productSlice";
+
 const CollectionPage = () => {
   const { collection } = useParams();
-  const [ searchParams  ]= useSearchParams();
+  const [searchParams] = useSearchParams();
   const dispatch = useDispatch();
   const { products, loading, error } = useSelector((state) => state.products);
   const queryParams = Object.fromEntries([...searchParams]);
@@ -25,21 +26,20 @@ const CollectionPage = () => {
   };
 
   const handleClickOutside = (e) => {
-    // it will close sidebar if click outside
+    // Close sidebar if clicked outside (only applies on mobile)
     if (sidebarRef.current && !sidebarRef.current.contains(e.target)) {
       setisSidebarOpen(false);
     }
   };
 
   useEffect(() => {
-    // Add event listener when sidebar is open
-    document.addEventListener("mousedown", handleClickOutside);
-
-    // Cleanup function to remove event listener
+    if (isSidebarOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isSidebarOpen]); // Depend on `isSidebarOpen` to reattach listener when state changes
+  }, [isSidebarOpen]);
 
   return (
     <div className="flex flex-col lg:flex-row">
@@ -51,22 +51,28 @@ const CollectionPage = () => {
         <FaFilter className="mr-2" />
         Filters
       </button>
-      {/*filter side bar  */}
+
+      {/* Sidebar */}
       <div
         ref={sidebarRef}
-        className={`${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
-      fixed inset-y-0 z-50 left-0 w-64 bg-white overflow-y-auto transition-transform duration-300 lg:static lg:translate-x-0
-      `}
+        className={`
+          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+          fixed inset-y-0 z-50 left-0 w-64 bg-white overflow-y-auto transition-transform duration-300
+          lg:static lg:translate-x-0 lg:flex-shrink-0
+        `}
       >
         <FilterSidebar />
       </div>
+
+      {/* Main Content */}
       <div className="flex-grow p-4">
         <h2 className="text-2xl uppercase mb-4">All Collection</h2>
-        {/* sort option */}
+
+        {/* Sort options */}
         <SortOptions />
 
-        {/* product grid */}
-        <ProductGrid products={products} loading={loading} error={error}/>
+        {/* Product grid */}
+        <ProductGrid products={products} loading={loading} error={error} />
       </div>
     </div>
   );
