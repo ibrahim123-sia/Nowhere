@@ -142,15 +142,17 @@ router.post("/register", otpLimiter, async (req, res) => {
 // @route   POST /api/users/verify-otp
 // @desc    Verify OTP and activate account
 // @access  Public
+// @route   POST /api/users/verify-otp
+// @desc    Verify OTP and activate account
+// @access  Public
 router.post("/verify-otp", async (req, res) => {
   const { email, otp } = req.body;
   const cleanOtp = otp?.trim();
 
   if (!email || !cleanOtp) {
-    
     return res.status(400).json({
       message: "Email and OTP are required",
-      received: { email, otp: cleanOtp }, // Include what was received
+      received: { email, otp: cleanOtp },
     });
   }
 
@@ -185,16 +187,15 @@ router.post("/verify-otp", async (req, res) => {
     user.otpExpires = undefined;
     await user.save();
 
-    // Create JWT token
-    const payload = {
-      user: {
-        id: user._id,
-        role: user.role,
-      },
+    // ✅ FIX: Use consistent token structure
+    const tokenPayload = {
+      userId: user._id.toString(), // Consistent with login
+      email: user.email,
+      role: user.role,
     };
 
     jwt.sign(
-      payload,
+      tokenPayload, // Use consistent payload
       process.env.JWT_SECRET,
       { expiresIn: "40h" },
       (err, token) => {
@@ -216,7 +217,7 @@ router.post("/verify-otp", async (req, res) => {
       }
     );
   } catch (err) {
-    
+    console.error("OTP verification error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });

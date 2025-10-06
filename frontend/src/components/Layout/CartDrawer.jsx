@@ -31,8 +31,31 @@ const CartDrawer = ({ drawerOpen, toggleCartDrawer }) => {
 
   const handleCheckout = () => {
     toggleCartDrawer();
-    navigate(user ? "/checkout" : "/login?redirect=checkout");
+    if (user) {
+      navigate("/checkout");
+    } else {
+      navigate("/register?redirect=/checkout");
+    }
   };
+
+  // Calculate subtotal as a fallback if cart.cartTotal is not available
+  const calculateSubtotal = () => {
+    if (cart?.cartTotal && cart.cartTotal > 0) {
+      return cart.cartTotal.toFixed(2);
+    }
+    
+    // Fallback calculation
+    if (cart?.products && cart.products.length > 0) {
+      const subtotal = cart.products.reduce((total, product) => {
+        return total + (product.price * product.quantity);
+      }, 0);
+      return subtotal.toFixed(2);
+    }
+    
+    return "0.00";
+  };
+
+  const subtotal = calculateSubtotal();
 
   return (
     <>
@@ -113,7 +136,7 @@ const CartDrawer = ({ drawerOpen, toggleCartDrawer }) => {
             <div className="flex justify-between mb-4">
               <span className="text-gray-600">Subtotal</span>
               <span className="font-medium text-gray-900">
-                ${cart?.cartTotal?.toFixed(2) || "0.00"}
+                ${subtotal}
               </span>
             </div>
             <button
@@ -125,18 +148,7 @@ const CartDrawer = ({ drawerOpen, toggleCartDrawer }) => {
             <p className="text-xs text-gray-500 mt-3 text-center">
               Shipping, taxes, and discount codes calculated at checkout.
             </p>
-            <div className="mt-4 flex justify-center space-x-4">
-              <span className="text-xs text-gray-500">Secure checkout</span>
-              <div className="flex space-x-2">
-                {["visa", "mastercard", "paypal"].map((method) => (
-                  <div
-                    key={method}
-                    className="h-4 w-6 bg-gray-100 rounded-sm"
-                    title={method}
-                  />
-                ))}
-              </div>
-            </div>
+            
           </div>
         )}
       </div>
