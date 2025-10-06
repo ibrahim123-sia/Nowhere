@@ -107,11 +107,11 @@ export const removeFromCart = createAsyncThunk(
 //merge guest cart into user cart
 export const mergeCart = createAsyncThunk(
   "cart/mergeCart",
-  async ({ guestId, userId }, { rejectWithValue }) => {
+  async ({ guestId }, { rejectWithValue }) => { // Remove userId parameter
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/cart/merge`,
-        { guestId, userId },
+        { guestId }, // Send only guestId
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("userToken")}`,

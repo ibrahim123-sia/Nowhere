@@ -46,19 +46,19 @@ const Register = () => {
     }
   }, [error]);
 
-  useEffect(() => {
-    if (user) {
-      if (cart?.products.length > 0 && guestId) {
-        dispatch(mergeCart({ guestId, user })).then(() => {
-          toast.success("Account created successfully!");
-          navigate(isCheckoutRedirect ? "/checkout" : "/");
-        });
-      } else {
-        toast.success("Account created successfully!");
-        navigate(isCheckoutRedirect ? "/checkout" : "/");
-      }
-    }
-  }, [user, guestId, cart, navigate, isCheckoutRedirect]);
+  // useEffect(() => {
+  //   if (user) {
+  //     if (cart?.products.length > 0 && guestId) {
+  //       dispatch(mergeCart({ guestId, user })).then(() => {
+  //         toast.success("Account created successfully!");
+  //         navigate(isCheckoutRedirect ? "/checkout" : "/");
+  //       });
+  //     } else {
+  //       toast.success("Account created successfully!");
+  //       navigate(isCheckoutRedirect ? "/checkout" : "/");
+  //     }
+  //   }
+  // }, [user, guestId, cart, navigate, isCheckoutRedirect]);
 
   const handleRegister = (e) => {
     e.preventDefault();
@@ -73,14 +73,36 @@ const Register = () => {
       });
   };
 
-  const handleVerifyOtp = (e) => {
-    e.preventDefault();
-    dispatch(verifyOtp({ email, otp }))
-      .unwrap()
-      .catch((err) => {
-        toast.error(err.message || "OTP verification failed");
-      });
-  };
+  const handleVerifyOtp = async (e) => {
+  e.preventDefault();
+  try {
+    // 1. Verify OTP and get token
+    const user = await dispatch(verifyOtp({ email, otp })).unwrap();
+    
+    // 2. Wait a moment for token to be stored
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // 3. Check if token is available
+    const token = localStorage.getItem('userToken');
+    if (!token) {
+      toast.error("Authentication failed. Please try again.");
+      return;
+    }
+    
+    // 4. Merge cart if needed
+   // In handleVerifyOtp function, change this:
+if (cart?.products.length > 0 && guestId) {
+  await dispatch(mergeCart({ guestId })).unwrap(); // Remove userId
+}
+    
+    // 5. Show success and redirect
+    toast.success("Account created successfully!");
+    navigate(isCheckoutRedirect ? "/checkout" : "/");
+    
+  } catch (error) {
+    toast.error(error.message || "OTP verification failed");
+  }
+};
 
   const handleResendOtp = () => {
     dispatch(registerUser({ name, email, password }))
