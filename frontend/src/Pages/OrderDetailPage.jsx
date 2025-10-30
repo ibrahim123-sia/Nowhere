@@ -23,7 +23,7 @@ const OrderDetailPage = () => {
     <>
       <div className="max-w-7xl mx-auto p-4 sm:p-6">
         <h2 className="text-2xl md:text-3xl font-bold mb-6">Order Details</h2>
-        {!OrderDetail ? (
+        {!orderDetails ? (
           <p>No Order Detail Found</p>
         ) : (
           // order information
