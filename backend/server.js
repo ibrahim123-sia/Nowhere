@@ -16,13 +16,10 @@ const subscriberRoutes=require("./routes/subscriberRoutes");
 const adminRoutes=require("./routes/adminRoutes");
 const productAdminRoutes=require("./routes/productAdminRoutes");
 const orderAdminRoutes=require("./routes/orderAdminRoutes");
+
 const app = express();
 app.use(express.json());
 app.use(cors());
-
-
-
-const PORT = process.env.PORT || 9000;
 
 connectDB();
 
@@ -47,7 +44,13 @@ app.get("/", (req, res) => {
   res.send("Welcome to the API");
 });
 
+// Only start server if not in Vercel environment
+if (require.main === module) {
+  const PORT = process.env.PORT || 9000;
+  app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+  });
+}
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+// Export for Vercel serverless
+module.exports = app;
