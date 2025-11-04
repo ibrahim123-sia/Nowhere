@@ -26,6 +26,8 @@ const PORT = process.env.PORT || 9000;
 
 connectDB();
 
+app.get("/", (req, res) => res.send("Server is Live"));
+
 //user routes
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);

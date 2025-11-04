@@ -49,6 +49,19 @@ const ContactUsPage = () => {
             </div>
 
             <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                placeholder="+92 312 2287869"
+              />
+            </div>
+
+            <div>
               <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
                 Subject <span className="text-red-500">*</span>
               </label>
@@ -156,20 +169,51 @@ const ContactUsPage = () => {
               ))}
             </ul>
           </div>
+
+          {/* Quick Stats */}
+          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 rounded-xl text-white">
+            <h3 className="text-xl font-bold mb-4">Quick Response</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span>Average Response Time:</span>
+                <span className="font-semibold">Under 2 hours</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Customer Satisfaction:</span>
+                <span className="font-semibold">98%</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Support Available:</span>
+                <span className="font-semibold">6 days a week</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Map Section */}
       <div className="mt-16 bg-white p-8 rounded-xl shadow-sm border border-gray-100">
         <h3 className="text-2xl font-bold text-gray-800 mb-6">Our Location</h3>
-        <div className="bg-gray-100 h-80 rounded-lg overflow-hidden flex items-center justify-center">
-          {/* Replace with your actual map embed */}
-          <div className="text-center p-6">
-            <svg className="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <p className="text-gray-500">Map of our location would be displayed here</p>
+        <div className="bg-gray-100 h-80 rounded-lg overflow-hidden">
+          {/* Temporary map image */}
+          <img 
+            src="https://images.unsplash.com/photo-1587334894133-d1ab49a87c84?w=800&h=400&fit=crop" 
+            alt="Map location"
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+          <div className="bg-indigo-50 p-4 rounded-lg">
+            <div className="font-semibold text-indigo-700">Karachi HQ</div>
+            <div className="text-sm text-gray-600">Main Office</div>
+          </div>
+          <div className="bg-purple-50 p-4 rounded-lg">
+            <div className="font-semibold text-purple-700">Lahore Branch</div>
+            <div className="text-sm text-gray-600">Regional Office</div>
+          </div>
+          <div className="bg-pink-50 p-4 rounded-lg">
+            <div className="font-semibold text-pink-700">Islamabad</div>
+            <div className="text-sm text-gray-600">Showroom</div>
           </div>
         </div>
       </div>

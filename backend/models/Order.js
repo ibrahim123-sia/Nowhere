@@ -33,7 +33,7 @@ const orderSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
+      ref: "User",
       require: true,
     },
     orderItems: [orderItemSchema],
