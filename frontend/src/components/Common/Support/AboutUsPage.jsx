@@ -2,6 +2,14 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const AboutUsPage = () => {
+  
+const teamImages = [
+  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face", 
+  "https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=400&h=400&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=400&fit=crop&crop=face", 
+  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop&crop=face"  
+];
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Hero Section */}
@@ -36,10 +44,12 @@ const AboutUsPage = () => {
           </Link>
         </div>
         <div className="order-1 md:order-2 bg-gray-100 h-96 rounded-xl overflow-hidden shadow-lg">
-          {/* Replace with your actual about image */}
-          <div className="w-full h-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
-            <span className="text-gray-500 text-lg">About Us Image</span>
-          </div>
+          {/* Temporary about image */}
+          <img 
+            src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=400&fit=crop" 
+            alt="Our fashion studio"
+            className="w-full h-full object-cover"
+          />
         </div>
       </div>
 
@@ -88,18 +98,22 @@ const AboutUsPage = () => {
         <h2 className="text-3xl font-bold text-gray-800 mb-12 text-center">Meet The Team</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {[
-            { name: "Alex Johnson", role: "Founder & CEO" },
-            { name: "Sarah Williams", role: "Creative Director" },
-            { name: "Michael Chen", role: "Head of Sustainability" },
-            { name: "Emma Davis", role: "Customer Experience" }
+            { name: "Alex Johnson", role: "Founder & CEO", bio: "10+ years in fashion industry", img: teamImages[0] },
+            { name: "Sarah Williams", role: "Creative Director", bio: "Former designer at major brands", img: teamImages[1] },
+            { name: "Michael Chen", role: "Head of Sustainability", bio: "Environmental science background", img: teamImages[2] },
+            { name: "Emma Davis", role: "Customer Experience", bio: "Customer service excellence", img: teamImages[3] }
           ].map((member, index) => (
             <div key={index} className="text-center bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
               <div className="w-40 h-40 mx-auto bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full mb-6 overflow-hidden flex items-center justify-center">
-                {/* Team member image */}
-                <span className="text-gray-400 text-xl">{member.name.charAt(0)}</span>
+                <img 
+                  src={member.img} 
+                  alt={member.name}
+                  className="w-full h-full object-cover"
+                />
               </div>
               <h4 className="font-semibold text-gray-800 text-lg mb-1">{member.name}</h4>
-              <p className="text-indigo-600 text-sm font-medium">{member.role}</p>
+              <p className="text-indigo-600 text-sm font-medium mb-2">{member.role}</p>
+              <p className="text-gray-500 text-xs mb-4">{member.bio}</p>
               <div className="flex justify-center space-x-3 mt-4">
                 <a href="#" className="text-gray-500 hover:text-indigo-600 transition-colors">
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -114,6 +128,26 @@ const AboutUsPage = () => {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Stats Section */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
+        <div className="text-center">
+          <div className="text-3xl font-bold text-indigo-600 mb-2">50K+</div>
+          <div className="text-gray-600">Happy Customers</div>
+        </div>
+        <div className="text-center">
+          <div className="text-3xl font-bold text-purple-600 mb-2">500+</div>
+          <div className="text-gray-600">Products</div>
+        </div>
+        <div className="text-center">
+          <div className="text-3xl font-bold text-green-600 mb-2">25+</div>
+          <div className="text-gray-600">Cities Served</div>
+        </div>
+        <div className="text-center">
+          <div className="text-3xl font-bold text-pink-600 mb-2">98%</div>
+          <div className="text-gray-600">Satisfaction Rate</div>
         </div>
       </div>
 
