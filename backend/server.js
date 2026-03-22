@@ -23,7 +23,15 @@ app.use(cors());
 
 const PORT = process.env.PORT || 9000;
 
-connectDB();
+// Ensure DB is connected before handling any API request
+app.use("/api", async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    res.status(500).json({ message: "Database connection failed" });
+  }
+});
 
 app.get("/", (req, res) => res.send("Server is Live"));
 
