@@ -288,6 +288,34 @@ res.status(500).send("Server Error")
 })
 
 
+//@route GET /api/products/similar/:id
+//@desc Retrive similar product based on current product gender and category
+//@access public
+
+router.get("/similar/:id",async(req,res)=>{
+  const {id}=req.params;
+
+  try{
+    const product=await Product.findById(id)
+
+    if(!product){
+      return res.status(404).json({message: "Product not found"})
+    }
+
+    const similarProducts=await Product.find({
+      _id:{$ne:id}, //exclude the current product id
+      gender:product.gender,
+      category:product.category,
+    }).limit(4);
+
+    res.json(similarProducts)
+  }
+  catch(error){
+    console.error(error);
+    res.status(500).json("Server error")
+  }
+})
+
 //@route GET /api/products/:id
 //@desc get a single product
 //@access public
@@ -305,35 +333,6 @@ router.get("/:id", async (req, res) => {
     res.status(500).send("Server error");
   }
 });
-
-
-//@route GET /api/products/similar/:id
-//@desc Retrive similar product based on current product gender and category
-//@access public
-
-router.get("/similar/:id",async(req,res)=>{
-  const {id}=req.params;
-
-  try{
-    const product=await Product.findById(id)
-
-    if(!product){
-      return res.status(404).json({message: "Product not found"})
-    }
-    
-    const similarProducts=await Product.find({
-      _id:{$ne:id}, //exclude the current product id
-      gender:product.gender,
-      category:product.category,
-    }).limit(4);
-
-    res.json(similarProducts)
-  }
-  catch(error){
-    console.error(error);
-    res.status(500).json("Server error")
-  }
-})
 
 
 
