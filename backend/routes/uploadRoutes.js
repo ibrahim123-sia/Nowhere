@@ -23,7 +23,7 @@ const upload=multer({});
 router.post("/",upload.single("image"),async(req,res)=>{
     try{
         if(!req.file){
-            res.status(400).json({message:"No file uploaded"});
+            return res.status(400).json({message:"No file uploaded"});
         }
 
         //function to handle the stream upload to cloudinary

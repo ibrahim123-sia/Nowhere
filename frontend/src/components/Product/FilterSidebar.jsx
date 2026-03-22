@@ -12,9 +12,9 @@ const FilterSidebar = () => {
     material: [],
     brand: [],
     minPrice: 0,
-    maxPrice: 100,
+    maxPrice: 500,
   });
-  const [priceRange, setPriceRange] = useState([0, 100]);
+  const [priceRange, setPriceRange] = useState([0, 500]);
 
   const categories = ["Top Wear", "Bottom Wear"];
   const colors = [
@@ -44,9 +44,9 @@ const FilterSidebar = () => {
       material: params.material ? params.material.split(",") : [],
       brand: params.brand ? params.brand.split(",") : [],
       minPrice: params.minPrice || 0,
-      maxPrice: params.maxPrice || 100,
+      maxPrice: params.maxPrice || 500,
     });
-    setPriceRange([0, params.maxPrice || 100]);
+    setPriceRange([0, params.maxPrice || 500]);
   }, [searchParams]);
 
   const handleCheckboxChange = (e) => {
@@ -113,9 +113,9 @@ const FilterSidebar = () => {
               material: [],
               brand: [],
               minPrice: 0,
-              maxPrice: 100,
+              maxPrice: 500,
             });
-            setPriceRange([0, 100]);
+            setPriceRange([0, 500]);
             navigate(window.location.pathname);
           }}
           className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
@@ -283,7 +283,7 @@ const FilterSidebar = () => {
           <input
             type="range"
             min="0"
-            max="100"
+            max="500"
             value={priceRange[1]}
             onChange={handlePriceChange}
             className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer 

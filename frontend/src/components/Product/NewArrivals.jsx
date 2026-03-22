@@ -23,32 +23,7 @@ const NewArrivals = () => {
           `${import.meta.env.VITE_BACKEND_URL}/api/products/new-arrivals`
         );
         
-        // Debug: Log the response to see its structure
-        console.log("API Response:", response);
-        console.log("Response data:", response.data);
-        
-        // Handle different response structures
-        let products = [];
-        
-        if (Array.isArray(response.data)) {
-          // Case 1: Direct array
-          products = response.data;
-        } else if (response.data && Array.isArray(response.data.products)) {
-          // Case 2: Object with products array
-          products = response.data.products;
-        } else if (response.data && Array.isArray(response.data.data)) {
-          // Case 3: Object with data array
-          products = response.data.data;
-        } else if (response.data && response.data.products) {
-          // Case 4: Single product or different structure
-          products = [response.data.products];
-        } else {
-          // Case 5: Unexpected response
-          console.warn("Unexpected API response structure:", response.data);
-          products = [];
-        }
-        
-        console.log("Processed products:", products);
+        const products = Array.isArray(response.data) ? response.data : [];
         setNewArrivals(products);
         
       } catch (error) {

@@ -1,6 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { toast } from 'react-toastify';
 
 const ContactUsPage = () => {
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setSubmitted(true);
+    toast.success('Your message has been sent! We will get back to you shortly.');
+    e.target.reset();
+    setTimeout(() => setSubmitted(false), 3000);
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
       {/* Hero Section */}
@@ -17,7 +28,7 @@ const ContactUsPage = () => {
         <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
           <h2 className="text-2xl font-bold text-gray-800 mb-8">Send Us a Message</h2>
           
-          <form className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
@@ -99,7 +110,7 @@ const ContactUsPage = () => {
               type="submit"
               className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-lg font-medium hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
             >
-              Send Message
+              {submitted ? 'Message Sent!' : 'Send Message'}
             </button>
           </form>
         </div>

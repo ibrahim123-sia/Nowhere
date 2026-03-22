@@ -245,7 +245,7 @@ const EditProductPage = () => {
                 <div key={index} className="relative group">
                   <img 
                     src={image.url} 
-                    alt={image.AltText || "Product Image"}
+                    alt={image.altText || "Product Image"}
                     className="w-24 h-24 object-cover rounded-md border border-gray-200"
                   />
                 </div>

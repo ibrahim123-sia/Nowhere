@@ -49,7 +49,7 @@ const orderSchema = new mongoose.Schema(
     },
     totalPrice: {
       type: Number,
-      require,
+      required: true,
     },
     isPaid: {
       type: Boolean,
@@ -78,4 +78,4 @@ const orderSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports=mongoose.model("order",orderSchema)
+module.exports=mongoose.model("Order",orderSchema)
