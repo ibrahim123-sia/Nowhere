@@ -1,19 +1,15 @@
 const mongoose = require("mongoose");
 
-let cached = global._mongooseConnection;
-
 const connectDB = async () => {
-  if (cached) {
-    return cached;
+  if (mongoose.connection.readyState >= 1) {
+    return;
   }
   try {
-    mongoose.connection.on("connected", () =>
-      console.log("Database Connected")
-    );
-    cached = await mongoose.connect(process.env.MONGODB_URI);
-    global._mongooseConnection = cached;
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log("Database Connected");
   } catch (error) {
     console.log(error.message);
+    throw error;
   }
 };
 
