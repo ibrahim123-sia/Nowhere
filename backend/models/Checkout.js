@@ -34,7 +34,7 @@ const checkoutSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      require: "true",
+      required: true,
     },
     checkoutItems: [checkoutItemSchema],
     shippingAddress: {
@@ -49,11 +49,11 @@ const checkoutSchema = new mongoose.Schema(
     },
     totalPrice: {
       type: Number,
-      require,
+      required: true,
     },
     isPaid: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     paidAt: {
       type: Date,

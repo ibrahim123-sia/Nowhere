@@ -100,7 +100,7 @@ const Footer = () => {
           <ul className='space-y-3 text-gray-600'>
             <li>
               <Link 
-                to="/collections/all?gender=Men&&category=Top Wear" 
+                to="/collections/all?gender=Men&category=Top Wear" 
                 className="hover:text-indigo-600 text-sm transition-colors duration-200 block"
               >
                 Men's Top Wear
@@ -108,7 +108,7 @@ const Footer = () => {
             </li>
             <li>
               <Link 
-                to="/collections/all?gender=Women&&category=Top Wear" 
+                to="/collections/all?gender=Women&category=Top Wear" 
                 className="hover:text-indigo-600 text-sm transition-colors duration-200 block"
               >
                 Women's Top Wear
@@ -116,7 +116,7 @@ const Footer = () => {
             </li>
             <li>
               <Link 
-                to="/collections/all?gender=Men&&category=Bottom Wear" 
+                to="/collections/all?gender=Men&category=Bottom Wear" 
                 className="hover:text-indigo-600 text-sm transition-colors duration-200 block"
               >
                 Men's Bottom Wear
@@ -124,7 +124,7 @@ const Footer = () => {
             </li>
             <li>
               <Link 
-                to="/collections/all?gender=Women&&category=Bottom Wear" 
+                to="/collections/all?gender=Women&category=Bottom Wear" 
                 className="hover:text-indigo-600 text-sm transition-colors duration-200 block"
               >
                 Women's Bottom Wear
@@ -186,7 +186,7 @@ const Footer = () => {
               <TbBrandMeta className='h-5 w-5'/>
             </a>
             <a 
-              href="https://www.Instagram.com" 
+              href="https://www.instagram.com" 
               target='_blank' 
               rel='noopener noreferrer'
               className='hover:text-pink-500 text-gray-600 transition-colors duration-200'
@@ -195,7 +195,7 @@ const Footer = () => {
               <IoLogoInstagram className='h-5 w-5'/>
             </a>
             <a 
-              href="https://www.Twitter.com" 
+              href="https://www.twitter.com" 
               target='_blank' 
               rel='noopener noreferrer'
               className='hover:text-blue-400 text-gray-600 transition-colors duration-200'

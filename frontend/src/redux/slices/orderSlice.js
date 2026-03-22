@@ -60,8 +60,9 @@ const orderSlice = createSlice({
       .addCase(fetchUserOrders.fulfilled, (state, action) => {
         (state.loading = false), (state.orders = action.payload);
       })
-      .addCase(fetchUserOrders.rejected, (state,action) => {
-        (state.loading = false), (state.error = action.payload.message);
+      .addCase(fetchUserOrders.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || action.error?.message || "Failed to fetch orders";
       })
       //fetch order detail
       .addCase(fetchOrderDetails.pending, (state) => {
@@ -70,8 +71,9 @@ const orderSlice = createSlice({
       .addCase(fetchOrderDetails.fulfilled, (state, action) => {
         (state.loading = false), (state.orderDetails = action.payload);
       })
-      .addCase(fetchOrderDetails.rejected, (state) => {
-        (state.loading = false), (state.error = action.payload.message);
+      .addCase(fetchOrderDetails.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || action.error?.message || "Failed to fetch order details";
       });
   },
 });

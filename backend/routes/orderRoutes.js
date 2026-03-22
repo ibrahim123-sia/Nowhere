@@ -13,7 +13,7 @@ router.get("/my-orders",protect,async(req,res)=>{
     try{
         //find the order for the authenticated user
         const orders=await Order.find({user:req.user._id}).sort({
-            createdAr:-1,
+            createdAt:-1,
         }); //sort by most recent order
         res.json(orders)
     }

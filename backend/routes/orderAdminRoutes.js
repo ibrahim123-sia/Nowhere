@@ -14,7 +14,7 @@ router.get("/", protect, admin, async (req, res) => {
     res.json(orders);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ meesage: "Server error" });
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -39,7 +39,7 @@ router.put("/:id", protect, admin, async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ meesage: "Server error" });
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -58,7 +58,7 @@ router.delete("/:id", protect, admin, async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ meesage: "Server error" });
+    res.status(500).json({ message: "Server error" });
   }
 });
 

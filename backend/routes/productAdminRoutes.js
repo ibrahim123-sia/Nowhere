@@ -13,7 +13,7 @@ router.get("/", protect, admin, async (req, res) => {
     res.json(products);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ meesage: "Server error" });
+    res.status(500).json({ message: "Server error" });
   }
 });
 

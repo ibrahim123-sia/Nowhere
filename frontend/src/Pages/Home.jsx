@@ -6,7 +6,6 @@ import ProductDetails from "../components/Product/ProductDetail";
 import ProductGrid from "../components/Product/ProductGrid";
 import FeaturedCollection from "../components/Product/FeaturedCollection";
 import FeaturesSection from "../components/Product/FeaturesSection";
-import Login from "./Login";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import {fetchProductsByFilters} from "../redux/slices/productSlice"
@@ -63,7 +62,6 @@ const Home = () => {
       </div>
       <FeaturedCollection/>
       <FeaturesSection/>
-      <Login/>
     </div>
   );
 };

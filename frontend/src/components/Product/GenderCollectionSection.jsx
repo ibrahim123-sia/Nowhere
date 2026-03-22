@@ -49,7 +49,7 @@ const GenderCollectionSection = () => {
               <div className='bg-white/90 backdrop-blur-sm p-6 rounded-lg max-w-xs transition-all duration-300 group-hover:bg-white'>
                 <h2 className='text-2xl md:text-3xl font-bold text-gray-900 mb-4'>Men's Collection</h2>
                 <Link 
-                  to='/collections/all?gender=men' 
+                  to='/collections/all?gender=Men' 
                   className='inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200'
                 >
                   Shop Now
