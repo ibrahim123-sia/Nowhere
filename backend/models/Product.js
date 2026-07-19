@@ -4,48 +4,48 @@ const productSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      require: true,
+      required: true,
       trim: true,
     },
     description: {
       type: String,
-      require: true,
+      required: true,
     },
     price: {
       type: Number,
-      require: true,
+      required: true,
     },
     discountPrice: {
       type: Number,
     },
     countInStock: {
       type: Number,
-      require: true,
+      required: true,
       default: 0,
     },
     sku: {
       type: String,
       unique: true,
-      require: true,
+      required: true,
     },
     category: {
       type: String,
-      require: true,
+      required: true,
     },
     brand: {
       type: String,
     },
     sizes: {
       type: [String],
-      require: true,
+      required: true,
     },
     colors: {
       type: [String],
-      require: true,
+      required: true,
     },
     collections: {
       type: String,
-      require: true,
+      required: true,
     },
     material: {
       type: String,
@@ -58,7 +58,7 @@ const productSchema = new mongoose.Schema(
       {
         url: {
           type: String,
-          require: true,
+          required: true,
         },
         altText: {
           type: String,
@@ -85,7 +85,7 @@ const productSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      require: true,
+      required: true,
     },
     metaTitle: {
       type: String,

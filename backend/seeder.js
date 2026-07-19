@@ -8,7 +8,7 @@ const product=require("./data/products")
 dotenv.config();
 
 //connect to DB
-mongoose.connect(process.env.MONGO_URI);
+mongoose.connect(process.env.MONGODB_URI);
 
 const seedData=async()=>{
     try{

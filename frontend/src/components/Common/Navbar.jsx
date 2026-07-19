@@ -19,8 +19,8 @@ const Navbar = () => {
 
   const cartItemCount = cart?.products?.reduce(
     (total, product) => total + product.quantity,
-    0 || 0
-  );
+    0
+  ) || 0;
 
   const toggleNavDrawer = () => {
     setNavDrawerOpen(!navDrawerOpen);
