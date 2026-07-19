@@ -44,9 +44,6 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  tls: {
-    rejectUnauthorized: false, // For local development only
-  },
 });
 
 // Generate OTP
@@ -170,7 +167,7 @@ router.post("/verify-otp", async (req, res) => {
     }
 
     // Check if OTP exists and matches
-    if (!user.otp || user.otp !== otp) {
+    if (!user.otp || user.otp !== cleanOtp) {
       return res.status(400).json({ message: "Invalid OTP code" });
     }
 

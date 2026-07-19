@@ -1,9 +1,17 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const userFromStorage = localStorage.getItem("userInfo")
-  ? JSON.parse(localStorage.getItem("userInfo"))
-  : null;
+const getUserFromStorage = () => {
+  try {
+    const stored = localStorage.getItem("userInfo");
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    localStorage.removeItem("userInfo");
+    return null;
+  }
+};
+
+const userFromStorage = getUserFromStorage();
 
 const initialGuestId =
   localStorage.getItem("guestId") || `guest_${new Date().getTime()}`;
@@ -30,7 +38,7 @@ export const loginUser = createAsyncThunk(
       localStorage.setItem("userToken", response.data.token);
       return response.data.user;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data);
     }
   }
 );
@@ -46,7 +54,7 @@ export const registerUser = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data);
     }
   }
 );
@@ -207,6 +215,6 @@ const authSlice = createSlice({
   }
 });
 
-export const { logout, resetOtpState, clearError, setPasswordResetStep } = authSlice.actions;
+export const { logout, resetOtpState, clearError } = authSlice.actions;
 
 export default authSlice.reducer;

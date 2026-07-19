@@ -3,7 +3,7 @@ const mongoose=require("mongoose")
 const subscriberSchema=new mongoose.Schema({
     email:{
         type:String,
-        require:true,
+        required:true,
         unique:true,
         trim:true,
         lowercase:true

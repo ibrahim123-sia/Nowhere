@@ -99,9 +99,11 @@ router.put("/:id", protect, admin, async (req, res) => {
       //update product field
       product.name = name || product.name;
       product.description = description || product.description;
-      product.price = price || product.price;
-      product.discountPrice = discountPrice || product.discountPrice;
-      product.countInStock = countInStock || product.countInStock;
+      product.price = price !== undefined ? price : product.price;
+      product.discountPrice =
+        discountPrice !== undefined ? discountPrice : product.discountPrice;
+      product.countInStock =
+        countInStock !== undefined ? countInStock : product.countInStock;
       product.category = category || product.category;
       product.brand = brand || product.brand;
       product.sizes = sizes || product.sizes;
@@ -116,7 +118,7 @@ router.put("/:id", protect, admin, async (req, res) => {
         isPublished !== undefined ? isPublished : product.isPublished;
       product.tags = tags || product.tags;
       product.dimensions = dimensions || product.dimensions;
-      product.weight = weight || product.weight;
+      product.weight = weight !== undefined ? weight : product.weight;
       product.sku = sku || product.sku;
 
       //save to the DB
