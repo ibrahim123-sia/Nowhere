@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FiLoader, FiAlertCircle, FiHeart } from 'react-icons/fi'
 import { toast } from 'sonner'
+import { formatPrice } from '../../utils/formatPrice'
 
 const ProductGrid = ({ products, loading, error }) => {
   const [wishlistItems, setWishlistItems] = useState([])
@@ -109,11 +110,11 @@ const ProductGrid = ({ products, loading, error }) => {
                   <div>
                     {product.originalPrice && (
                       <span className="text-sm text-gray-400 line-through mr-2">
-                        ${product.originalPrice.toFixed(2)}
+                        {formatPrice(product.originalPrice)}
                       </span>
                     )}
                     <span className="text-gray-800 font-semibold">
-                      ${product.price.toFixed(2)}
+                      {formatPrice(product.price)}
                     </span>
                   </div>
                   {product.rating && (

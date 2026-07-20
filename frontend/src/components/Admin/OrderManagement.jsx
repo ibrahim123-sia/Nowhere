@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { fetchAllOrders, updateOrderStatus } from "../../redux/slices/adminOrderSlice";
+import { formatPrice } from "../../utils/formatPrice";
 
 const OrderManagement = () => {
   const dispatch = useDispatch();
@@ -110,7 +111,7 @@ const OrderManagement = () => {
                     {order.name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    ${order.totalPrice.toFixed(2)}
+                    {formatPrice(order.totalPrice)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <select

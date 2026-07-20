@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchOrderDetails } from "../redux/slices/orderSlice";
+import { formatPrice } from "../utils/formatPrice";
 const OrderDetailPage = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
@@ -103,10 +104,10 @@ const OrderDetailPage = () => {
                           {item.name}
                         </Link>
                       </td>
-                      <td className="py-2 px-4">${item.price}</td>
+                      <td className="py-2 px-4">{formatPrice(item.price)}</td>
                       <td className="py-2 px-4">{item.quantity}</td>
                       <td className="py-2 px-4">
-                        ${item.price * item.quantity}
+                        {formatPrice(item.price * item.quantity)}
                       </td>
                     </tr>
                   ))}

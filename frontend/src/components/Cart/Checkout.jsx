@@ -4,6 +4,7 @@ import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { createCheckout } from "../../redux/slices/checkoutSlice";
 import { mergeCart } from "../../redux/slices/cartSlice"; // Your existing action
+import { formatPrice } from "../../utils/formatPrice";
 
 const Checkout = () => {
   const [checkoutId, setCheckoutId] = useState();
@@ -299,7 +300,7 @@ const Checkout = () => {
                       <p className="text-sm text-gray-500">Qty: {product.quantity}</p>
                     </div>
                   </div>
-                  <p className="text-md font-semibold text-indigo-700">${product.price?.toLocaleString()}</p>
+                  <p className="text-md font-semibold text-indigo-700">{formatPrice(product.price)}</p>
                 </div>
               ))}
             </div>
@@ -307,7 +308,7 @@ const Checkout = () => {
             <div className="space-y-3 border-t border-gray-200 pt-4">
               <div className="flex justify-between items-center">
                 <p className="text-gray-600">Subtotal</p>
-                <p className="text-gray-800 font-medium">${cart.totalPrice?.toLocaleString()}</p>
+                <p className="text-gray-800 font-medium">{formatPrice(cart.totalPrice)}</p>
               </div>
               <div className="flex justify-between items-center">
                 <p className="text-gray-600">Shipping</p>
@@ -315,7 +316,7 @@ const Checkout = () => {
               </div>
               <div className="flex justify-between items-center pt-3 border-t border-gray-200">
                 <p className="text-lg font-semibold text-gray-800">Total</p>
-                <p className="text-xl font-bold text-indigo-700">${cart.totalPrice?.toLocaleString()}</p>
+                <p className="text-xl font-bold text-indigo-700">{formatPrice(cart.totalPrice)}</p>
               </div>
             </div>
           </div>

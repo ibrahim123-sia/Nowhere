@@ -159,7 +159,7 @@ const AddProductPage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className={labelClass}>Price ($)</label>
+              <label className={labelClass}>Price (Rs.)</label>
               <input
                 type="number"
                 name="price"
@@ -173,7 +173,7 @@ const AddProductPage = () => {
             </div>
 
             <div>
-              <label className={labelClass}>Original Price ($)</label>
+              <label className={labelClass}>Original Price (Rs.)</label>
               <input
                 type="number"
                 name="originalPrice"

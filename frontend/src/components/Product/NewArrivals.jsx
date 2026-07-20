@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import axios from "axios";
+import { formatPrice } from "../../utils/formatPrice";
 
 const NewArrivals = () => {
   const scrollRef = useRef(null);
@@ -236,7 +237,7 @@ const NewArrivals = () => {
                     className="block group-hover:text-indigo-600 transition-colors duration-200"
                   >
                     <h3 className="font-medium text-gray-900">{productName}</h3>
-                    <p className="text-gray-600 mt-1">${productPrice.toFixed(2)}</p>
+                    <p className="text-gray-600 mt-1">{formatPrice(productPrice)}</p>
                   </Link>
                 </div>
                 <Link

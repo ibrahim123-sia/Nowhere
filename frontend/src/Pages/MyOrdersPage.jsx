@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUserOrders } from "../redux/slices/orderSlice";
+import { formatPrice } from "../utils/formatPrice";
 
 const MyOrdersPage = () => {
   const navigate = useNavigate();
@@ -88,7 +89,7 @@ const MyOrdersPage = () => {
                 </div>
                 <div>
                   <p className="text-gray-500 text-xs">Total</p>
-                  <p className="font-semibold text-indigo-700">${order.totalPrice?.toFixed(2)}</p>
+                  <p className="font-semibold text-indigo-700">{formatPrice(order.totalPrice)}</p>
                 </div>
                 <div className="col-span-2">
                   <p className="text-gray-500 text-xs">Shipping</p>
@@ -167,7 +168,7 @@ const MyOrdersPage = () => {
                     {order.orderItems.length}
                   </td>
                   <td className="py-4 px-6 font-semibold text-indigo-700">
-                    ${order.totalPrice?.toFixed(2)}
+                    {formatPrice(order.totalPrice)}
                   </td>
                   <td className="py-4 px-6">
                     <span

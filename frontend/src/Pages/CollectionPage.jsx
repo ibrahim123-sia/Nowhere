@@ -42,37 +42,44 @@ const CollectionPage = () => {
   }, [isSidebarOpen]);
 
   return (
-    <div className="flex flex-col lg:flex-row">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       {/* Mobile filter button */}
       <button
         onClick={toggleSidebar}
-        className="lg:hidden border p-2 flex justify-center items-center"
+        className="lg:hidden mb-4 flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium shadow-sm"
       >
-        <FaFilter className="mr-2" />
+        <FaFilter />
         Filters
       </button>
 
-      {/* Sidebar */}
-      <div
-        ref={sidebarRef}
-        className={`
-          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
-          fixed inset-y-0 z-50 left-0 w-64 bg-white overflow-y-auto transition-transform duration-300
-          lg:static lg:translate-x-0 lg:flex-shrink-0
-        `}
-      >
-        <FilterSidebar />
-      </div>
+      {/* Mobile overlay */}
+      {isSidebarOpen && (
+        <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" />
+      )}
 
-      {/* Main Content */}
-      <div className="flex-grow p-4">
-        <h2 className="text-2xl uppercase mb-4">All Collection</h2>
+      <div className="flex flex-col lg:flex-row lg:items-start gap-6">
+        {/* Sidebar */}
+        <div
+          ref={sidebarRef}
+          className={`
+            ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+            fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] overflow-y-auto bg-gray-50 p-4 transition-transform duration-300
+            lg:static lg:z-auto lg:w-72 lg:flex-shrink-0 lg:translate-x-0 lg:p-0 lg:sticky lg:top-24
+          `}
+        >
+          <FilterSidebar />
+        </div>
 
-        {/* Sort options */}
-        <SortOptions />
+        {/* Main Content */}
+        <div className="flex-grow min-w-0">
+          <h2 className="text-2xl uppercase mb-4">All Collection</h2>
 
-        {/* Product grid */}
-        <ProductGrid products={products} loading={loading} error={error} />
+          {/* Sort options */}
+          <SortOptions />
+
+          {/* Product grid */}
+          <ProductGrid products={products} loading={loading} error={error} />
+        </div>
       </div>
     </div>
   );

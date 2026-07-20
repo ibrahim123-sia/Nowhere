@@ -6,6 +6,7 @@ import {
   removeFromCart,
   updateCartItemQuantity,
 } from "../../redux/slices/cartSlice";
+import { formatPrice } from "../../utils/formatPrice";
 const CartContents = ({ cart, userId, guestId }) => {
   const dispatch = useDispatch();
   //handle adding or subctracting to cart
@@ -90,7 +91,7 @@ const CartContents = ({ cart, userId, guestId }) => {
             </div>
           </div>
           <div>
-            <p>${product.price.toLocaleString()}</p>
+            <p>{formatPrice(product.price)}</p>
             <button
               onClick={() =>
     handleRemoveFromToCart({
