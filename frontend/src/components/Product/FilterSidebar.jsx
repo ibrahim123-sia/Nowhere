@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { FiSliders, FiCheck } from "react-icons/fi";
+import { FiSliders, FiCheck, FiX } from "react-icons/fi";
 import { formatPrice } from "../../utils/formatPrice";
 
 const DEFAULT_MAX_PRICE = 50000;
 
-const FilterSidebar = () => {
+const FilterSidebar = ({ onClose }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [filter, setFilter] = useState({
@@ -120,8 +120,8 @@ const FilterSidebar = () => {
     (Number(priceRange[1]) < DEFAULT_MAX_PRICE ? 1 : 0);
 
   const FilterSection = ({ title, children }) => (
-    <div className="mb-7 pb-6 border-b border-gray-100 last:border-0 last:pb-0 last:mb-0">
-      <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider mb-4">
+    <div className="mb-6 pb-5 border-b border-gray-100 last:border-0 last:pb-0 last:mb-0">
+      <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider mb-3.5">
         {title}
       </h4>
       {children}
@@ -143,29 +143,40 @@ const FilterSidebar = () => {
   );
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="flex h-full flex-col bg-white lg:h-auto">
       {/* Header */}
-      <div className="flex justify-between items-center px-6 py-5 bg-gradient-to-r from-indigo-600 to-purple-600">
-        <div className="flex items-center gap-2 text-white">
-          <FiSliders className="h-5 w-5" />
-          <h3 className="text-lg font-bold">Filters</h3>
+      <div className="flex flex-shrink-0 justify-between items-center px-5 py-4 lg:px-0 lg:pb-4 border-b border-gray-200">
+        <div className="flex items-center gap-2 text-gray-900">
+          <FiSliders className="h-4 w-4 text-indigo-600" />
+          <h3 className="text-base font-bold">Filters</h3>
           {activeFilterCount > 0 && (
-            <span className="ml-1 inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-white/25 text-xs font-semibold">
+            <span className="ml-0.5 inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-indigo-600 text-white text-xs font-semibold">
               {activeFilterCount}
             </span>
           )}
         </div>
-        {activeFilterCount > 0 && (
-          <button
-            onClick={clearAll}
-            className="text-xs font-semibold text-white/90 hover:text-white underline-offset-2 hover:underline"
-          >
-            Clear all
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {activeFilterCount > 0 && (
+            <button
+              onClick={clearAll}
+              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 underline-offset-2 hover:underline"
+            >
+              Clear all
+            </button>
+          )}
+          {onClose && (
+            <button
+              onClick={onClose}
+              aria-label="Close filters"
+              className="lg:hidden text-gray-500 hover:text-gray-800 p-1 -m-1"
+            >
+              <FiX className="h-5 w-5" />
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="p-6">
+      <div className="flex-1 min-h-0 overflow-y-auto lg:overflow-visible px-5 py-4 lg:px-0 lg:pt-5">
         {/* Category Filter */}
         <FilterSection title="Category">
           <div className="flex flex-wrap gap-2">
