@@ -42,7 +42,7 @@ const CollectionPage = () => {
   }, [isSidebarOpen]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
       {/* Mobile filter button */}
       <button
         onClick={toggleSidebar}
@@ -54,7 +54,10 @@ const CollectionPage = () => {
 
       {/* Mobile overlay */}
       {isSidebarOpen && (
-        <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" />
+        <div
+          onClick={toggleSidebar}
+          className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+        />
       )}
 
       <div className="flex flex-col lg:flex-row lg:items-start gap-6">
@@ -63,11 +66,13 @@ const CollectionPage = () => {
           ref={sidebarRef}
           className={`
             ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
-            fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] overflow-y-auto bg-gray-50 p-4 transition-transform duration-300
-            lg:static lg:z-auto lg:w-72 lg:flex-shrink-0 lg:translate-x-0 lg:p-0 lg:sticky lg:top-24
+            fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] shadow-xl transition-transform duration-300
+            lg:static lg:z-auto lg:w-64 lg:flex-shrink-0 lg:translate-x-0 lg:shadow-none
+            lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto
+            lg:pr-6 lg:border-r lg:border-gray-200
           `}
         >
-          <FilterSidebar />
+          <FilterSidebar onClose={toggleSidebar} />
         </div>
 
         {/* Main Content */}
