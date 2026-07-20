@@ -155,7 +155,7 @@ const AddProductPage = () => {
 
         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
           <div className='mb-6'>
-            <label className='block font-semibold mb-2'>Price ($)</label>
+            <label className='block font-semibold mb-2'>Price (Rs.)</label>
             <input
               type='number'
               name='price'
@@ -169,7 +169,7 @@ const AddProductPage = () => {
           </div>
 
           <div className='mb-6'>
-            <label className='block font-semibold mb-2'>Original Price ($)</label>
+            <label className='block font-semibold mb-2'>Original Price (Rs.)</label>
             <input
               type='number'
               name='originalPrice'

@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { clearCart } from "../redux/slices/cartSlice";
+import { formatPrice } from "../utils/formatPrice";
 
 const OrderConfirmationPage = () => {
   const dispatch = useDispatch();
@@ -78,7 +79,7 @@ const OrderConfirmationPage = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-md font-medium text-indigo-700">${item.price}</p>
+                      <p className="text-md font-medium text-indigo-700">{formatPrice(item.price)}</p>
                       <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                     </div>
                   </div>
@@ -117,7 +118,7 @@ const OrderConfirmationPage = () => {
               <div className="flex justify-between items-center">
                 <h4 className="text-lg font-semibold text-indigo-800">Total Amount</h4>
                 <p className="text-xl font-bold text-indigo-700">
-                  ${checkout.totalPrice}
+                  {formatPrice(checkout.totalPrice)}
                 </p>
               </div>
             </div>

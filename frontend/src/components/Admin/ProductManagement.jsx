@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from "react-redux";
 import { deleteProduct, fetchAdminProducts } from "../../redux/slices/adminProductSlice";
 import { FiEdit2, FiTrash2, FiPlus } from "react-icons/fi";
+import { formatPrice } from "../../utils/formatPrice";
 
 const ProductManagement = () => {
   const dispatch = useDispatch();
@@ -97,7 +98,7 @@ const ProductManagement = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      ${product.price.toFixed(2)}
+                      {formatPrice(product.price)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {product.sku}

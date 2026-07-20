@@ -9,6 +9,7 @@ import {
   fetchSimilarProducts,
 } from "../../redux/slices/productSlice";
 import { addToCart } from "../../redux/slices/cartSlice";
+import { formatPrice } from "../../utils/formatPrice";
 
 const ProductDetail = ({ productId }) => {
   const { id } = useParams();
@@ -170,12 +171,12 @@ const ProductDetail = ({ productId }) => {
                 </h1>
                 {selectedProduct.originalPrice && (
                   <span className="text-lg text-gray-400 line-through">
-                    ${selectedProduct.originalPrice.toFixed(2)}
+                    {formatPrice(selectedProduct.originalPrice)}
                   </span>
                 )}
               </div>
               <span className="text-2xl font-semibold text-indigo-600">
-                ${selectedProduct.price.toFixed(2)}
+                {formatPrice(selectedProduct.price)}
               </span>
               
               {selectedProduct.rating && (

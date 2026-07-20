@@ -3,6 +3,7 @@ import { IoMdClose } from "react-icons/io";
 import CartContents from "../Cart/CartContents";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { formatPrice } from "../../utils/formatPrice";
 
 const CartDrawer = ({ drawerOpen, toggleCartDrawer }) => {
   const { user, guestId } = useSelector((state) => state.auth);
@@ -136,7 +137,7 @@ const CartDrawer = ({ drawerOpen, toggleCartDrawer }) => {
             <div className="flex justify-between mb-4">
               <span className="text-gray-600">Subtotal</span>
               <span className="font-medium text-gray-900">
-                ${subtotal}
+                {formatPrice(subtotal)}
               </span>
             </div>
             <button
