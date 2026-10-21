@@ -48,7 +48,7 @@ const AdminHomePage = () => {
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatTile label="Revenue" value={formatPrice(stats.revenue)} hint={`${stats.orderCount} orders`} />
+        <StatTile label="Revenue" value={formatPrice(stats.revenue)} hint={`${stats.orderCount} ${stats.orderCount === 1 ? "order" : "orders"}`} />
         <StatTile label="Avg. order" value={formatPrice(stats.averageOrderValue)} />
         <StatTile label="To fulfil" value={status.Processing || 0} hint={`${status.Shipped || 0} shipped`} to="/admin/orders?status=Processing" />
         <StatTile label="Products" value={stats.productCount} hint={`${stats.lowStock.length} low on stock`} to="/admin/products" />
