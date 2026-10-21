@@ -5,7 +5,7 @@ const FEATURES = [
   { icon: HiTruck, title: "Free delivery", description: "On orders over Rs. 5,000, in 3-5 working days" },
   { icon: HiOutlineBanknotes, title: "Cash on delivery", description: "Pay the courier when your order arrives" },
   { icon: HiArrowPathRoundedSquare, title: "30-day returns", description: "Easy exchanges on unworn items with tags" },
-  { icon: HiOutlineSparkles, title: "AI stylist", description: "Nora helps you find, size and order in chat" },
+  { icon: HiOutlineSparkles, title: "AI stylist", description: "Iris helps you find, size and order in chat" },
 ];
 
 const FeaturesSection = () => {

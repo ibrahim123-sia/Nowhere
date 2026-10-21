@@ -29,11 +29,11 @@ const AssistantPromo = () => {
         <div className="relative grid gap-10 lg:grid-cols-2 lg:items-center">
           <div>
             <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold">
-              <HiSparkles className="h-4 w-4" /> Meet Nora
+              <HiSparkles className="h-4 w-4" /> Meet Iris
             </span>
             <h2 className="mt-5 font-display text-4xl font-medium leading-tight md:text-5xl">Your personal stylist, in chat.</h2>
             <p className="mt-4 max-w-md text-white/75">
-              Describe what you need and Nora finds it, checks your size and stock, fills your bag and places a cash-on-delivery order
+              Describe what you need and Iris finds it, checks your size and stock, fills your bag and places a cash-on-delivery order
               when you say so. Works in English, Urdu and Roman Urdu.
             </p>
             <button onClick={() => dispatch(openAgent())} className="btn-light mt-8">

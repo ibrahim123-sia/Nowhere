@@ -126,7 +126,7 @@ const ProductDetail = () => {
     }
   };
 
-  const askNora = () => {
+  const askIris = () => {
     dispatch(openAgent());
     if (!streaming) {
       dispatch(sendAgentMessage(`Tell me about the ${current.name}. How does it fit and what should I pair it with?`));
@@ -308,8 +308,8 @@ const ProductDetail = () => {
             </button>
           </div>
 
-          <button onClick={askNora} className="mt-4 flex w-full items-center justify-center gap-2 rounded-full border border-dashed border-stone-300 py-3 text-sm font-medium text-ink-soft transition hover:border-ink hover:text-ink">
-            <HiSparkles className="h-4 w-4" /> Ask Nora about fit and styling
+          <button onClick={askIris} className="mt-4 flex w-full items-center justify-center gap-2 rounded-full border border-dashed border-stone-300 py-3 text-sm font-medium text-ink-soft transition hover:border-ink hover:text-ink">
+            <HiSparkles className="h-4 w-4" /> Ask Iris about fit and styling
           </button>
 
           {/* Delivery promises */}

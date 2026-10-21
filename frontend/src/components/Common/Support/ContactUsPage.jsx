@@ -73,7 +73,7 @@ const ContactUsPage = () => {
             <HiSparkles className="mt-0.5 h-6 w-6 flex-shrink-0" />
             <span>
               <span className="block font-semibold">Need an answer right now?</span>
-              <span className="mt-1 block text-sm text-white/70">Nora can track your order, check sizes and stock, or help you shop, any time of day.</span>
+              <span className="mt-1 block text-sm text-white/70">Iris can track your order, check sizes and stock, or help you shop, any time of day.</span>
             </span>
           </button>
           {[

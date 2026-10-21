@@ -105,7 +105,7 @@ const OrderManagement = () => {
                       <p className="font-medium">{order.user?.name || order.shippingAddress?.fullName || "Guest"}</p>
                       <p className="text-xs text-ink-muted">
                         {order.user ? order.user.email : `Guest · ${order.email || "no email"}`}
-                        {order.source === "assistant" && " · via Nora"}
+                        {order.source === "assistant" && " · via Iris"}
                       </p>
                     </td>
                     <td className="px-5 py-3">

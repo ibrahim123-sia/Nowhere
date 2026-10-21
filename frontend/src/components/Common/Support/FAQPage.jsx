@@ -23,7 +23,7 @@ const faqs = [
       },
       {
         question: "How do I track my order?",
-        answer: "Signed-in customers can see live status under My account. Anyone (including guests) can use the Track order page with the order number from the confirmation email and the email used at checkout. You can also just ask Nora, our assistant.",
+        answer: "Signed-in customers can see live status under My account. Anyone (including guests) can use the Track order page with the order number from the confirmation email and the email used at checkout. You can also just ask Iris, our assistant.",
       },
       {
         question: "Do I need an account to order?",
@@ -31,7 +31,7 @@ const faqs = [
       },
       {
         question: "Can I cancel my order?",
-        answer: "Yes, while it is still Processing. Open the order in My account and choose Cancel order, or ask Nora. Once an order has shipped it can be returned instead.",
+        answer: "Yes, while it is still Processing. Open the order in My account and choose Cancel order, or ask Iris. Once an order has shipped it can be returned instead.",
       },
     ],
   },
@@ -82,7 +82,7 @@ const faqs = [
       },
       {
         question: "How do I contact customer service?",
-        answer: "Email support@nowhere.pk or call +92 300 0000000, Monday to Saturday, 10AM to 7PM PKT. Nora, our AI assistant, is available any time.",
+        answer: "Email support@nowhere.pk or call +92 300 0000000, Monday to Saturday, 10AM to 7PM PKT. Iris, our AI assistant, is available any time.",
       },
     ],
   },
@@ -143,9 +143,9 @@ const FAQPage = () => {
 
       <div className="mt-14 rounded-3xl bg-cream p-8 text-center">
         <h2 className="heading-display text-2xl">Still have a question?</h2>
-        <p className="mt-2 text-sm text-ink-soft">Ask Nora any time, or get in touch with our team.</p>
+        <p className="mt-2 text-sm text-ink-soft">Ask Iris any time, or get in touch with our team.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <button onClick={() => dispatch(openAgent())} className="btn-primary">Ask Nora</button>
+          <button onClick={() => dispatch(openAgent())} className="btn-primary">Ask Iris</button>
           <Link to="/contact" className="btn-outline">Contact us</Link>
         </div>
       </div>

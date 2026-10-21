@@ -23,7 +23,7 @@ const SUGGESTIONS = [
 ];
 
 const TypingDots = () => (
-  <span className="inline-flex gap-1" aria-label="Nora is typing">
+  <span className="inline-flex gap-1" aria-label="Iris is typing">
     {[0, 1, 2].map((i) => (
       <span key={i} className="h-1.5 w-1.5 animate-dot-pulse rounded-full bg-ink-muted" style={{ animationDelay: `${i * 0.15}s` }} />
     ))}
@@ -87,20 +87,20 @@ const AgentWidget = () => {
         aria-label="Open shopping assistant"
       >
         <HiSparkles className="h-5 w-5" />
-        Ask Nora
+        Ask Iris
       </button>
 
       <section
         className={`fixed inset-0 z-[55] flex flex-col bg-white transition-all duration-300 sm:inset-auto sm:bottom-5 sm:right-5 sm:h-[min(680px,calc(100vh-2.5rem))] sm:w-[400px] sm:rounded-3xl sm:border sm:border-stone-200 sm:shadow-lift ${
           open ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-6 opacity-0"
         }`}
-        aria-label="Nora shopping assistant"
+        aria-label="Iris shopping assistant"
         aria-hidden={!open}
       >
         <header className="flex items-center gap-3 border-b border-stone-200 px-4 py-3">
           <Avatar />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold">Nora</p>
+            <p className="text-sm font-semibold">Iris</p>
             <p className="text-[11px] text-ink-muted">
               {enabled === false ? "Offline" : streaming ? "Typing..." : "AI shopping assistant"}
             </p>
@@ -122,7 +122,7 @@ const AgentWidget = () => {
                 <Avatar />
                 <div className="rounded-2xl rounded-tl-md bg-stone-100 px-4 py-3 text-sm leading-relaxed">
                   <p>
-                    Hi{user ? ` ${user.name.split(" ")[0]}` : ""}! I'm Nora. I can find pieces for you, check sizes and stock,
+                    Hi{user ? ` ${user.name.split(" ")[0]}` : ""}! I'm Iris. I can find pieces for you, check sizes and stock,
                     add things to your bag, place a cash-on-delivery order and track it, all from this chat.
                   </p>
                 </div>
@@ -199,7 +199,7 @@ const AgentWidget = () => {
               placeholder={enabled === false ? "Assistant offline" : "Ask about sizes, styles, orders..."}
               disabled={enabled === false}
               className="max-h-28 min-h-[40px] flex-1 resize-none bg-transparent px-3 py-2.5 text-sm focus:outline-none disabled:cursor-not-allowed"
-              aria-label="Message Nora"
+              aria-label="Message Iris"
             />
             {streaming ? (
               <button type="button" onClick={stopAgentReply} className="flex h-10 w-10 items-center justify-center rounded-xl bg-stone-200 text-ink" aria-label="Stop reply">
@@ -211,7 +211,7 @@ const AgentWidget = () => {
               </button>
             )}
           </div>
-          <p className="mt-2 text-center text-[10px] text-ink-muted">Nora can make mistakes. Orders are only placed after you confirm.</p>
+          <p className="mt-2 text-center text-[10px] text-ink-muted">Iris can make mistakes. Orders are only placed after you confirm.</p>
         </form>
       </section>
     </>
