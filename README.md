@@ -83,12 +83,12 @@ sequenceDiagram
 - Tool output (descriptions, reviews) is treated as data, not instructions; facts must come from tools.
 - Rate limits, message length limits, per-session turn limits and one reply at a time per conversation.
 
-**Free providers, one code path.** Groq and Gemini both expose OpenAI-compatible chat completions, so a single `fetch` + server-sent-events parser supports both, plus any compatible endpoint. If one provider is rate limited, the next configured one takes over.
+**Free providers, one code path.** Groq and Gemini both expose OpenAI-compatible chat completions, so a single `fetch` + server-sent-events parser supports both, plus any compatible endpoint. If one provider fails before replying (rate limit, outage, retired model or bad key), the next configured one takes over.
 
 | Provider | Key | Default model |
 | --- | --- | --- |
-| Groq | [console.groq.com/keys](https://console.groq.com/keys) | `llama-3.3-70b-versatile` |
-| Google Gemini | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) | `gemini-2.5-flash` |
+| Groq | [console.groq.com/keys](https://console.groq.com/keys) | `openai/gpt-oss-120b` |
+| Google Gemini | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) | `gemini-3.8-flash` |
 | Custom (OpenRouter, Ollama, ...) | `AGENT_BASE_URL` + `AGENT_API_KEY` | `AGENT_MODEL` |
 
 ## Screenshots
@@ -184,7 +184,7 @@ Neither data script deletes users or orders.
 | `EMAIL_USER` / `EMAIL_PASS` | For email | Gmail address and app password |
 | `AGENT_PROVIDER` | No | `groq` (default), `gemini` or `custom` |
 | `GROQ_API_KEY` / `GEMINI_API_KEY` | For Iris | Free API keys; set both for automatic fallback |
-| `GROQ_MODEL` / `GEMINI_MODEL` | No | Override the default models |
+| `GROQ_MODEL` / `GEMINI_MODEL` | No | Override the default models; leave unset to follow the defaults |
 | `ADMIN_NAME` / `ADMIN_EMAIL` / `ADMIN_PASSWORD` | For `seed` | Admin account created on a fresh database |
 | `VITE_BACKEND_URL` | Yes (frontend) | API origin used by the storefront |
 | `SITE_URL` | No (frontend) | Public storefront URL for previews, sitemap and robots.txt; defaults to the Vercel production domain |
@@ -223,7 +223,7 @@ The storefront is a single-page app, so search engines and link previews get hel
 npm test
 ```
 
-The suite starts the real Express app against an in-memory MongoDB and a mock OpenAI-compatible LLM that streams scripted tool calls. Its 87 checks cover search and filters, cart validation, guest and customer checkout, coupons, stock reservation and release, order privacy, the OTP flow, admin rules, reviews, the contact form, and the assistant: streaming, product and confirmation cards, the server-side confirmation gate, the Confirm button path, session privacy and provider errors. CI runs the suite, the linter and a production build on every push.
+The suite starts the real Express app against an in-memory MongoDB and a mock OpenAI-compatible LLM that streams scripted tool calls. Its 90 checks cover search and filters, cart validation, guest and customer checkout, coupons, stock reservation and release, order privacy, the OTP flow, admin rules, reviews, the contact form, and the assistant: streaming, product and confirmation cards, the server-side confirmation gate, the Confirm button path, session privacy, provider errors and fallback, and Gemini thought signatures. CI runs the suite, the linter and a production build on every push.
 
 ## Deployment
 
