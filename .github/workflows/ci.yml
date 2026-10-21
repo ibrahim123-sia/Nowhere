@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Cache MongoDB binary
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/mongodb-binaries
+          key: mongodb-binaries-${{ runner.os }}-7.0.24
+      - run: npm ci
+        env:
+          MONGOMS_DOWNLOAD_DIR: ${{ runner.temp }}/mongodb-binaries
+      - name: Syntax check
+        run: node --check server.js && node --check seeder.js && node --check scripts/enhanceProducts.js
+      - name: API and agent tests
+        run: npm test
+        env:
+          MONGOMS_DOWNLOAD_DIR: ${{ runner.temp }}/mongodb-binaries
+
+  frontend:
+    name: Frontend lint and build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+        env:
+          VITE_BACKEND_URL: http://localhost:9000
