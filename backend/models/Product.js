@@ -14,19 +14,23 @@ const productSchema = new mongoose.Schema(
     price: {
       type: Number,
       required: true,
+      min: 0,
     },
     discountPrice: {
       type: Number,
+      min: 0,
     },
     countInStock: {
       type: Number,
       required: true,
       default: 0,
+      min: 0,
     },
     sku: {
       type: String,
       unique: true,
       required: true,
+      trim: true,
     },
     category: {
       type: String,
@@ -54,6 +58,18 @@ const productSchema = new mongoose.Schema(
       type: String,
       enum: ["Men", "Women", "Unisex"],
     },
+    fit: {
+      type: String,
+    },
+    season: {
+      type: String,
+    },
+    occasion: [String],
+    highlights: [String],
+    careInstructions: [String],
+    origin: {
+      type: String,
+    },
     images: [
       {
         url: {
@@ -71,7 +87,7 @@ const productSchema = new mongoose.Schema(
     },
     isPublished: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     rating: {
       type: Number,
@@ -106,4 +122,14 @@ const productSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports=mongoose.model("Product",productSchema);
+productSchema.index({ isPublished: 1, gender: 1, category: 1 });
+productSchema.index({ createdAt: -1 });
+
+// Price the customer actually pays: the discount price when it is a real discount.
+productSchema.methods.effectivePrice = function () {
+  return this.discountPrice && this.discountPrice < this.price
+    ? this.discountPrice
+    : this.price;
+};
+
+module.exports = mongoose.model("Product", productSchema);
