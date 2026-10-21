@@ -1,6 +1,6 @@
 # Nowhere API
 
-Express + MongoDB REST API for the Nowhere store, including the **Nora** shopping assistant.
+Express + MongoDB REST API for the Nowhere store, including the **Iris** shopping assistant.
 
 ## Scripts
 

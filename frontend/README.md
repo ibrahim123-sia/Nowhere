@@ -1,6 +1,6 @@
 # Nowhere Storefront
 
-React 18 + Vite single-page app for the Nowhere store: storefront, checkout, account pages, the Nora chat assistant and the admin panel.
+React 18 + Vite single-page app for the Nowhere store: storefront, checkout, account pages, the Iris chat assistant and the admin panel.
 
 ## Scripts
 

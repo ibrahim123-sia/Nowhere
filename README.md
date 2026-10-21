@@ -13,9 +13,9 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38B2AC?logo=tailwindcss&logoColor=white)
 ![AI](https://img.shields.io/badge/AI-Groq%20%7C%20Gemini-F55036)
 
-[Features](#features) · [Nora](#meet-nora-the-ai-shopping-assistant) · [Screenshots](#screenshots) · [Quick start](#quick-start) · [Architecture](#architecture) · [API](#api-overview) · [Docs](#documentation)
+[Features](#features) · [Iris](#meet-nora-the-ai-shopping-assistant) · [Screenshots](#screenshots) · [Quick start](#quick-start) · [Architecture](#architecture) · [API](#api-overview) · [Docs](#documentation)
 
-<img src="docs/assets/preview.jpg" alt="Nowhere storefront with the Nora assistant open" width="100%" />
+<img src="docs/assets/preview.jpg" alt="Nowhere storefront with the Iris assistant open" width="100%" />
 
 </div>
 
@@ -23,7 +23,7 @@
 
 **Nowhere** is a production-style e-commerce platform for a Pakistani clothing brand. A React 18 + Vite storefront talks to an Express and MongoDB API and covers the complete retail flow: a filterable catalogue with real product photography, reviews with fit feedback, guest and account carts, guest checkout with cash on delivery, order tracking and cancellation, transactional email, and an admin panel with a sales dashboard.
 
-Its headline feature is **Nora**, an AI shopping agent built into every page. Nora runs on free LLM tiers (Groq or Google Gemini), and uses tools to search the catalogue, manage the bag, prepare an order summary and place a cash-on-delivery order once the shopper confirms, then track, cancel or re-order it. She works for guests and signed-in customers alike, in English, Urdu or Roman Urdu.
+Its headline feature is **Iris**, an AI shopping agent built into every page. Iris runs on free LLM tiers (Groq or Google Gemini), and uses tools to search the catalogue, manage the bag, prepare an order summary and place a cash-on-delivery order once the shopper confirms, then track, cancel or re-order it. She works for guests and signed-in customers alike, in English, Urdu or Roman Urdu.
 
 | | |
 | --- | --- |
@@ -42,11 +42,11 @@ Its headline feature is **Nora**, an AI shopping agent built into every page. No
 | **Orders** | Human-friendly order numbers, status timeline, cancel while processing, buy again, guest tracking by order number + email, confirmation emails |
 | **Accounts** | JWT auth with email OTP verification, password reset, profile, saved address, password change, persistent wishlist |
 | **Admin** | Revenue, average order value, orders by status, 30-day sales chart, low-stock alerts; one product form for add/edit; order workflow; user management |
-| **Assistant** | Nora: streaming chat with product cards, order summaries with Confirm buttons and order-placed cards; server-enforced confirmation |
+| **Assistant** | Iris: streaming chat with product cards, order summaries with Confirm buttons and order-placed cards; server-enforced confirmation |
 
-## Meet Nora, the AI shopping assistant
+## Meet Iris, the AI shopping assistant
 
-Nora is an agent: a language model that can call tools and loop until the shopper's request is done.
+Iris is an agent: a language model that can call tools and loop until the shopper's request is done.
 
 - **Find** products by style, colour, size, budget or occasion, and explain fabric, fit and reviews.
 - **Act** on the bag: add, change quantity, remove, or re-add a past order.
@@ -97,7 +97,7 @@ sequenceDiagram
 | <img src="docs/assets/home.jpg" alt="Home page" /> | <img src="docs/assets/product.jpg" alt="Product page" /> |
 | **Collection filters** | **Guest checkout** |
 | <img src="docs/assets/collection.jpg" alt="Collection page with filters" /> | <img src="docs/assets/checkout.jpg" alt="Checkout page" /> |
-| **Nora prepares the order** | **Order placed from chat** |
+| **Iris prepares the order** | **Order placed from chat** |
 | <img src="docs/assets/assistant-checkout.jpg" alt="Assistant order summary" /> | <img src="docs/assets/assistant-order-placed.jpg" alt="Assistant order placed" /> |
 | **Admin dashboard** | **Order management** |
 | <img src="docs/assets/admin-dashboard.jpg" alt="Admin dashboard" /> | <img src="docs/assets/admin-orders.jpg" alt="Admin orders" /> |
@@ -119,7 +119,7 @@ flowchart LR
     subgraph Browser["Browser · React SPA"]
         UI[Pages & components] --> RX[Redux slices]
         RX --> API[api.js]
-        NW[Nora widget] -->|fetch + SSE| AG
+        NW[Iris widget] -->|fetch + SSE| AG
     end
     API -->|JSON| MW
     subgraph Server["Express API"]
@@ -182,7 +182,7 @@ Neither data script deletes users or orders.
 | `CLOUDINARY_CLOUD_NAME` / `_API_KEY` / `_API_SECRET` | For uploads | Product image storage |
 | `EMAIL_USER` / `EMAIL_PASS` | For email | Gmail address and app password |
 | `AGENT_PROVIDER` | No | `groq` (default), `gemini` or `custom` |
-| `GROQ_API_KEY` / `GEMINI_API_KEY` | For Nora | Free API keys; set both for automatic fallback |
+| `GROQ_API_KEY` / `GEMINI_API_KEY` | For Iris | Free API keys; set both for automatic fallback |
 | `GROQ_MODEL` / `GEMINI_MODEL` | No | Override the default models |
 | `ADMIN_NAME` / `ADMIN_EMAIL` / `ADMIN_PASSWORD` | For `seed` | Admin account created on a fresh database |
 | `VITE_BACKEND_URL` | Yes (frontend) | API origin used by the storefront |
@@ -264,7 +264,7 @@ Nowhere/
 
 - Online payments (JazzCash, Easypaisa or cards) alongside cash on delivery
 - Stock per size and colour
-- Returns and exchanges from the order page and through Nora
+- Returns and exchanges from the order page and through Iris
 - Customer photos in reviews; shipping notifications by email or WhatsApp
 
 ## Documentation
