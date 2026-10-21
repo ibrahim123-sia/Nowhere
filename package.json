@@ -1,0 +1,25 @@
+{
+  "name": "nowhere",
+  "version": "2.0.0",
+  "private": true,
+  "description": "MERN clothing store with an AI shopping assistant",
+  "author": "Syed Ibrahim Ali",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ibrahim123-sia/Nowhere.git"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "install:all": "npm install --prefix backend && npm install --prefix frontend",
+    "dev:api": "npm run dev --prefix backend",
+    "dev:web": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend",
+    "lint": "npm run lint --prefix frontend",
+    "test": "npm test --prefix backend",
+    "seed": "npm run seed --prefix backend",
+    "enhance": "npm run enhance --prefix backend"
+  }
+}

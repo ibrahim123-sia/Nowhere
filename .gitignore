@@ -1,6 +1,25 @@
-node_modules
-.env
-dist
+# Dependencies
+node_modules/
 
-# portfolio screenshot gallery (kept locally, not committed)
+# Builds and caches
+dist/
+coverage/
+.cache/
+
+# Environment (commit the .env.example files only)
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Portfolio screenshot gallery (kept locally, not committed)
 screenshots/

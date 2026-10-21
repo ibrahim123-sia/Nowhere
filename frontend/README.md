@@ -1,8 +1,30 @@
-# React + Vite
+# Nowhere Storefront
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 18 + Vite single-page app for the Nowhere store: storefront, checkout, account pages, the Nora chat assistant and the admin panel.
 
-Currently, two official plugins are available:
+## Scripts
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start Vite on `http://localhost:5173` |
+| `npm run build` | Production build to `dist/` |
+| `npm run preview` | Serve the production build locally |
+| `npm run lint` | ESLint |
+
+Copy `.env.example` to `.env` and set `VITE_BACKEND_URL` to the API origin.
+
+## Layout
+
+```
+src/
+  components/   Layout, Product, Cart, Order, Agent, Admin, Common
+  Pages/        route-level pages
+  redux/        store and slices (auth, cart, products, checkout, orders, wishlist, store, agent, admin)
+  hooks/        usePageTitle
+  utils/        api.js (axios client), product, order and price helpers
+  assets/       brand imagery
+```
+
+Design tokens (colours, fonts, shadows) live in `tailwind.config.js`; shared component classes such as `.btn-primary`, `.input` and `.card` live in `src/index.css`.
+
+See the [root README](../README.md) for setup and architecture.
