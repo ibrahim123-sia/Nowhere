@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import { FiMinus, FiPlus, FiHeart, FiShare2, FiTruck, FiRefreshCw, FiCreditCard, FiChevronDown } from "react-icons/fi";
+import { HiSparkles } from "react-icons/hi2";
 import ProductGrid from "./ProductGrid";
 import ProductReviews from "./ProductReviews";
 import SizeGuideModal from "./SizeGuideModal";
@@ -12,6 +13,7 @@ import { PageLoader, EmptyState } from "../Common/Feedback";
 import { fetchProductDetails, fetchSimilarProducts } from "../../redux/slices/productSlice";
 import { addToCart, openCartDrawer } from "../../redux/slices/cartSlice";
 import { toggleWishlist } from "../../redux/slices/wishlistSlice";
+import { openAgent, sendAgentMessage } from "../../redux/slices/agentSlice";
 import { formatPrice } from "../../utils/formatPrice";
 import { imageSrcSet, imageUrl, isLightColor, swatchStyle } from "../../utils/product";
 import { addRecentlyViewed, getRecentlyViewed } from "../../utils/recentlyViewed";
@@ -43,6 +45,7 @@ const ProductDetail = () => {
     (state) => state.products
   );
   const { shipping } = useSelector((state) => state.store.config);
+  const { streaming } = useSelector((state) => state.agent);
   const wishlisted = useSelector((state) => state.wishlist.items.some((item) => item._id === id));
 
   const [activeImage, setActiveImage] = useState(0);
@@ -120,6 +123,13 @@ const ProductDetail = () => {
       }
     } catch {
       // Share sheet dismissed.
+    }
+  };
+
+  const askNora = () => {
+    dispatch(openAgent());
+    if (!streaming) {
+      dispatch(sendAgentMessage(`Tell me about the ${current.name}. How does it fit and what should I pair it with?`));
     }
   };
 
@@ -297,6 +307,10 @@ const ProductDetail = () => {
               <FiShare2 className="h-5 w-5" />
             </button>
           </div>
+
+          <button onClick={askNora} className="mt-4 flex w-full items-center justify-center gap-2 rounded-full border border-dashed border-stone-300 py-3 text-sm font-medium text-ink-soft transition hover:border-ink hover:text-ink">
+            <HiSparkles className="h-4 w-4" /> Ask Nora about fit and styling
+          </button>
 
           {/* Delivery promises */}
           <div className="mt-8 grid gap-4 rounded-2xl bg-cream p-5 sm:grid-cols-3">

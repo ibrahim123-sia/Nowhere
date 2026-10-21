@@ -2,6 +2,7 @@ import React from "react";
 import { Outlet } from "react-router-dom";
 import Header from "../Common/Header";
 import Footer from "../Common/Footer";
+import AgentWidget from "../Agent/AgentWidget";
 
 const UserLayout = () => {
   return (
@@ -11,6 +12,7 @@ const UserLayout = () => {
         <Outlet />
       </main>
       <Footer />
+      <AgentWidget />
     </>
   );
 };

@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect } from "react";
+import React, { lazy, Suspense, useEffect, useRef } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Provider, useDispatch, useSelector } from "react-redux";
 import { Toaster, toast } from "sonner";
@@ -6,6 +6,7 @@ import store from "./redux/store";
 import { logout } from "./redux/slices/authSlice";
 import { clearCart, fetchCart } from "./redux/slices/cartSlice";
 import { fetchStoreConfig } from "./redux/slices/storeSlice";
+import { clearAgentLocal, fetchAgentStatus } from "./redux/slices/agentSlice";
 import UserLayout from "./components/Layout/UserLayout";
 import ProtectedRoute from "./components/Common/ProtectedRoute";
 import ScrollToTop from "./components/Common/ScrollToTop";
@@ -43,13 +44,17 @@ const OrderManagement = lazy(() => import("./components/Admin/OrderManagement"))
 const AppEffects = () => {
   const dispatch = useDispatch();
   const userId = useSelector((state) => state.auth.user?._id);
+  const previousUser = useRef(userId);
 
   useEffect(() => {
     dispatch(fetchStoreConfig());
+    dispatch(fetchAgentStatus());
   }, [dispatch]);
 
   useEffect(() => {
     dispatch(fetchCart());
+    if (previousUser.current && !userId) dispatch(clearAgentLocal());
+    previousUser.current = userId;
   }, [userId, dispatch]);
 
   useEffect(() => {

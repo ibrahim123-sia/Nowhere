@@ -106,7 +106,7 @@ const Profile = () => {
 
           {tab === "address" && (
             <form onSubmit={(e) => { e.preventDefault(); save({ shippingAddress: address }, "Address saved"); }} className="card max-w-xl space-y-4 p-6">
-              <p className="text-sm text-ink-muted">Used to pre-fill checkout.</p>
+              <p className="text-sm text-ink-muted">Used to pre-fill checkout, and by Nora when you order in chat.</p>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Full name" id="a-name" required value={address.fullName} onChange={setAddr("fullName")} />
                 <Field label="Phone" id="a-phone" type="tel" required value={address.phone} onChange={setAddr("phone")} />

@@ -9,6 +9,7 @@ import adminProductReducer from "./slices/adminProductSlice";
 import adminOrderReducer from "./slices/adminOrderSlice";
 import wishlistReducer from "./slices/wishlistSlice";
 import storeReducer from "./slices/storeSlice";
+import agentReducer from "./slices/agentSlice";
 
 const store = configureStore({
   reducer: {
@@ -22,6 +23,7 @@ const store = configureStore({
     adminOrders: adminOrderReducer,
     wishlist: wishlistReducer,
     store: storeReducer,
+    agent: agentReducer,
   },
 });
 

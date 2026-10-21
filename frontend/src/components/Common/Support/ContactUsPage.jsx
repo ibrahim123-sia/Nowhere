@@ -1,14 +1,17 @@
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import { FiClock, FiMail, FiPhone } from "react-icons/fi";
+import { HiSparkles } from "react-icons/hi2";
 import api from "../../../utils/api";
+import { openAgent } from "../../../redux/slices/agentSlice";
 import usePageTitle from "../../../hooks/usePageTitle";
 
 const EMPTY = { name: "", email: "", subject: "", message: "" };
 
 const ContactUsPage = () => {
   usePageTitle("Contact us");
+  const dispatch = useDispatch();
   const { supportEmail, supportPhone, supportHours } = useSelector((state) => state.store.config);
   const [form, setForm] = useState(EMPTY);
   const [sending, setSending] = useState(false);
@@ -66,6 +69,13 @@ const ContactUsPage = () => {
         </form>
 
         <div className="space-y-4">
+          <button onClick={() => dispatch(openAgent())} className="flex w-full items-start gap-4 rounded-3xl bg-ink p-6 text-left text-white">
+            <HiSparkles className="mt-0.5 h-6 w-6 flex-shrink-0" />
+            <span>
+              <span className="block font-semibold">Need an answer right now?</span>
+              <span className="mt-1 block text-sm text-white/70">Nora can track your order, check sizes and stock, or help you shop, any time of day.</span>
+            </span>
+          </button>
           {[
             { icon: FiMail, label: "Email", value: supportEmail, href: `mailto:${supportEmail}` },
             { icon: FiPhone, label: "Phone", value: supportPhone, href: `tel:${supportPhone.replace(/\s/g, "")}` },

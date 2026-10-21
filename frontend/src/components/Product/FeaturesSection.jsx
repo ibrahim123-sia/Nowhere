@@ -1,11 +1,11 @@
 import React from "react";
-import { HiArrowPathRoundedSquare, HiOutlineBanknotes, HiTruck, HiOutlineChatBubbleLeftRight } from "react-icons/hi2";
+import { HiArrowPathRoundedSquare, HiOutlineBanknotes, HiTruck, HiOutlineSparkles } from "react-icons/hi2";
 
 const FEATURES = [
   { icon: HiTruck, title: "Free delivery", description: "On orders over Rs. 5,000, in 3-5 working days" },
   { icon: HiOutlineBanknotes, title: "Cash on delivery", description: "Pay the courier when your order arrives" },
   { icon: HiArrowPathRoundedSquare, title: "30-day returns", description: "Easy exchanges on unworn items with tags" },
-  { icon: HiOutlineChatBubbleLeftRight, title: "Real support", description: "Talk to our team Mon-Sat, 10AM - 7PM" },
+  { icon: HiOutlineSparkles, title: "AI stylist", description: "Nora helps you find, size and order in chat" },
 ];
 
 const FeaturesSection = () => {

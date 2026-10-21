@@ -30,7 +30,7 @@ const ProductGrid = ({ products, loading, error, columns = "grid-cols-2 md:grid-
     return (
       <EmptyState
         title="No matches found"
-        description="Try removing a filter or searching for something else."
+        description="Try removing a filter or searching for something else. Our assistant Nora can also help you find the right piece."
         actionLabel={emptyAction ? "Browse all products" : undefined}
         actionTo={emptyAction ? "/collections/all" : undefined}
       />

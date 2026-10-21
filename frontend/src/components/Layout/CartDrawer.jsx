@@ -5,6 +5,7 @@ import { IoMdClose } from "react-icons/io";
 import { HiOutlineShoppingBag } from "react-icons/hi2";
 import CartContents from "../Cart/CartContents";
 import { closeCartDrawer } from "../../redux/slices/cartSlice";
+import { openAgent } from "../../redux/slices/agentSlice";
 import { formatPrice } from "../../utils/formatPrice";
 
 const CartDrawer = () => {
@@ -80,10 +81,13 @@ const CartDrawer = () => {
             <div className="flex h-full flex-col items-center justify-center text-center">
               <HiOutlineShoppingBag className="mb-4 h-12 w-12 text-stone-300" />
               <p className="heading-display text-xl">Your bag is empty</p>
-              <p className="mt-1 max-w-xs text-sm text-ink-muted">Find something you love and it will show up here.</p>
+              <p className="mt-1 max-w-xs text-sm text-ink-muted">Find something you love, or ask Nora to pick a few options for you.</p>
               <div className="mt-6 flex flex-col gap-2">
                 <button onClick={() => { close(); navigate("/collections/all"); }} className="btn-primary">
                   Start shopping
+                </button>
+                <button onClick={() => { close(); dispatch(openAgent()); }} className="btn-ghost">
+                  Ask Nora for ideas
                 </button>
               </div>
             </div>

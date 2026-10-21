@@ -17,7 +17,7 @@ const VALUES = [
   {
     icon: FiHeart,
     title: "Customer first",
-    text: "Cash on delivery, 30-day returns and real fit notes in our reviews.",
+    text: "Cash on delivery, 30-day returns, real fit notes in our reviews, and a stylist in chat whenever you need one.",
   },
 ];
 
@@ -44,8 +44,8 @@ const AboutUsPage = () => {
         <div className="flex flex-col justify-center rounded-[2rem] bg-cream p-10 md:p-14">
           <h2 className="heading-display text-3xl">Shopping, made personal</h2>
           <p className="mt-4 leading-relaxed text-ink-soft">
-            Online shopping should feel like walking into a good store: honest photos, real fit notes from customers, cash on
-            delivery and easy returns.
+            Online shopping should feel like walking into a good store. That's why we built Nora, an AI stylist who can find the
+            right piece, check your size and stock, and place your order in a chat, in English, Urdu or Roman Urdu.
           </p>
           <Link to="/collections/all" className="btn-primary mt-8 w-fit">Explore the collection</Link>
         </div>
