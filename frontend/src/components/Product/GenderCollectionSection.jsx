@@ -1,74 +1,41 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
-import MenCollectionImage from '../../assets/mens-collection.jpg'
-import WomenCollectionImage from '../../assets/womens-collection.jpg'
+import React from "react";
+import { Link } from "react-router-dom";
+import { FiArrowUpRight } from "react-icons/fi";
+import MenCollectionImage from "../../assets/mens-collection.jpg";
+import WomenCollectionImage from "../../assets/womens-collection.jpg";
+
+const TILES = [
+  { title: "Women", subtitle: "Blouses, denim, tailoring", to: "/collections/all?gender=Women", image: WomenCollectionImage },
+  { title: "Men", subtitle: "Shirts, tees, chinos", to: "/collections/all?gender=Men", image: MenCollectionImage },
+];
 
 const GenderCollectionSection = () => {
   return (
-    <section className='py-16 md:py-24 px-4 sm:px-6 lg:px-8'>
-      <div className='max-w-7xl mx-auto'>
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8'>
-          {/* Women's Collection */}
-          <div className='relative group overflow-hidden rounded-xl'>
-            <img 
-              src={WomenCollectionImage} 
-              alt="Women's Collection" 
-              className='w-full h-[500px] md:h-[600px] object-cover transition-transform duration-500 group-hover:scale-105'
+    <section className="container-page mt-6">
+      <div className="grid gap-6 md:grid-cols-2">
+        {TILES.map((tile) => (
+          <Link key={tile.title} to={tile.to} className="group relative block overflow-hidden rounded-[2rem]">
+            <img
+              src={tile.image}
+              alt={`${tile.title}'s collection`}
+              loading="lazy"
+              className="h-[460px] w-full object-cover transition duration-700 group-hover:scale-[1.03] md:h-[560px]"
             />
-            <div className='absolute inset-0 bg-gradient-to-t from-gray-900/70 via-gray-900/20 to-transparent' />
-            <div className='absolute bottom-8 left-8 right-8'>
-              <div className='bg-white/90 backdrop-blur-sm p-6 rounded-lg max-w-xs transition-all duration-300 group-hover:bg-white'>
-                <h2 className='text-2xl md:text-3xl font-bold text-gray-900 mb-4'>Women's Collection</h2>
-                <Link 
-                  to='/collections/all?gender=Women' 
-                  className='inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200'
-                >
-                  Shop Now
-                  <svg 
-                    className='ml-2 h-4 w-4' 
-                    fill='none' 
-                    viewBox='0 0 24 24' 
-                    stroke='currentColor'
-                  >
-                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M14 5l7 7m0 0l-7 7m7-7H3' />
-                  </svg>
-                </Link>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-8 text-white">
+              <div>
+                <h2 className="font-display text-4xl font-medium">{tile.title}</h2>
+                <p className="mt-1 text-sm text-white/80">{tile.subtitle}</p>
               </div>
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-ink transition group-hover:rotate-45">
+                <FiArrowUpRight className="h-5 w-5" />
+              </span>
             </div>
-          </div>
-
-          {/* Men's Collection */}
-          <div className='relative group overflow-hidden rounded-xl'>
-            <img 
-              src={MenCollectionImage} 
-              alt="Men's Collection" 
-              className='w-full h-[500px] md:h-[600px] object-cover transition-transform duration-500 group-hover:scale-105'
-            />
-            <div className='absolute inset-0 bg-gradient-to-t from-gray-900/70 via-gray-900/20 to-transparent' />
-            <div className='absolute bottom-8 left-8 right-8'>
-              <div className='bg-white/90 backdrop-blur-sm p-6 rounded-lg max-w-xs transition-all duration-300 group-hover:bg-white'>
-                <h2 className='text-2xl md:text-3xl font-bold text-gray-900 mb-4'>Men's Collection</h2>
-                <Link 
-                  to='/collections/all?gender=Men' 
-                  className='inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200'
-                >
-                  Shop Now
-                  <svg 
-                    className='ml-2 h-4 w-4' 
-                    fill='none' 
-                    viewBox='0 0 24 24' 
-                    stroke='currentColor'
-                  >
-                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M14 5l7 7m0 0l-7 7m7-7H3' />
-                  </svg>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
+          </Link>
+        ))}
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default GenderCollectionSection
+export default GenderCollectionSection;

@@ -1,35 +1,40 @@
 import React from "react";
 import { useSearchParams } from "react-router-dom";
 
+const OPTIONS = [
+  { value: "", label: "Recommended" },
+  { value: "newest", label: "Newest" },
+  { value: "popularity", label: "Top rated" },
+  { value: "priceAsc", label: "Price: low to high" },
+  { value: "priceDesc", label: "Price: high to low" },
+];
+
 const SortOptions = () => {
-  const [searchParams, setsearchParams] = useSearchParams();
-  
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const handleSortChange = (e) => {
-    const sortBy = e.target.value;
-    searchParams.set("sortBy", sortBy);
-    setsearchParams(searchParams);
+    const params = new URLSearchParams(searchParams);
+    if (e.target.value) params.set("sortBy", e.target.value);
+    else params.delete("sortBy");
+    setSearchParams(params);
   };
 
-  // Design tokens matching your previous components
-  const selectClass = "border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 shadow-sm text-sm text-gray-700";
-
   return (
-    <div className="mb-6 flex items-center justify-end">
-      <label htmlFor="sort" className="mr-2 text-sm font-medium text-gray-600">
-        Sort by:
-      </label>
+    <label className="flex items-center gap-2 text-sm">
+      <span className="hidden text-ink-muted sm:inline">Sort by</span>
       <select
         value={searchParams.get("sortBy") || ""}
         onChange={handleSortChange}
-        id="sort"
-        className={selectClass}
+        className="rounded-full border border-stone-300 bg-white py-2 pl-4 pr-9 text-sm font-medium focus:border-ink focus:outline-none"
+        aria-label="Sort products"
       >
-        <option value="">Default</option>
-        <option value="priceAsc">Price: Low To High</option>
-        <option value="priceDesc">Price: High To Low</option>
-        <option value="popularity">Popularity</option>
+        {OPTIONS.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
       </select>
-    </div>
+    </label>
   );
 };
 

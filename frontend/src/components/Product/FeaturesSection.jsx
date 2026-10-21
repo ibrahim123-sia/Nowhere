@@ -1,52 +1,31 @@
-import React from 'react'
-import { HiArrowPathRoundedSquare, HiOutlineCreditCard, HiTruck } from 'react-icons/hi2'
+import React from "react";
+import { HiArrowPathRoundedSquare, HiOutlineBanknotes, HiTruck, HiOutlineChatBubbleLeftRight } from "react-icons/hi2";
+
+const FEATURES = [
+  { icon: HiTruck, title: "Free delivery", description: "On orders over Rs. 5,000, in 3-5 working days" },
+  { icon: HiOutlineBanknotes, title: "Cash on delivery", description: "Pay the courier when your order arrives" },
+  { icon: HiArrowPathRoundedSquare, title: "30-day returns", description: "Easy exchanges on unworn items with tags" },
+  { icon: HiOutlineChatBubbleLeftRight, title: "Real support", description: "Talk to our team Mon-Sat, 10AM - 7PM" },
+];
 
 const FeaturesSection = () => {
-  const features = [
-    {
-      icon: <HiArrowPathRoundedSquare className="h-8 w-8" />,
-      title: "45 DAYS RETURN",
-      description: "Hassle-free money back guarantee",
-      color: "text-indigo-600"
-    },
-    {
-      icon: <HiOutlineCreditCard className="h-8 w-8" />,
-      title: "SECURE CHECKOUT",
-      description: "100% protected payment process",
-      color: "text-purple-600"
-    },
-    {
-      icon: <HiTruck className="h-8 w-8" />,
-      title: "FREE SHIPPING",
-      description: "On all international orders over $100",
-      color: "text-pink-600"
-    }
-  ]
-
   return (
-    <section className='py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-gray-50'>
-      <div className='max-w-7xl mx-auto'>
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12'>
-          {features.map((feature, index) => (
-            <div 
-              key={index} 
-              className='bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 flex flex-col items-center text-center'
-            >
-              <div className={`p-4 rounded-full mb-5 ${feature.color} bg-opacity-10`}>
-                {feature.icon}
-              </div>
-              <h4 className='text-lg font-semibold text-gray-800 mb-3 tracking-normal'>
-                {feature.title}
-              </h4>
-              <p className='text-gray-600 text-base'>
-                {feature.description}
-              </p>
+    <section className="container-page mt-24">
+      <div className="grid grid-cols-2 gap-6 border-y border-stone-200 py-10 lg:grid-cols-4">
+        {FEATURES.map(({ icon: Icon, title, description }) => (
+          <div key={title} className="flex flex-col items-start gap-3 sm:flex-row">
+            <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-cream">
+              <Icon className="h-5 w-5" />
+            </span>
+            <div>
+              <h3 className="text-sm font-semibold">{title}</h3>
+              <p className="mt-1 text-xs leading-relaxed text-ink-muted">{description}</p>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default FeaturesSection
+export default FeaturesSection;

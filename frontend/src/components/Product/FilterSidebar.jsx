@@ -1,348 +1,212 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { FiSliders, FiCheck, FiX } from "react-icons/fi";
-import { formatPrice } from "../../utils/formatPrice";
+import { useSearchParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { FiX, FiChevronDown } from "react-icons/fi";
+import { fetchFacets } from "../../redux/slices/productSlice";
+import { FILTER_KEYS, isLightColor, swatchStyle } from "../../utils/product";
 
-const DEFAULT_MAX_PRICE = 50000;
+const PRICE_PRESETS = [
+  { label: "Under Rs. 2,500", max: 2500 },
+  { label: "Rs. 2,500 - 4,000", min: 2500, max: 4000 },
+  { label: "Rs. 4,000 - 6,000", min: 4000, max: 6000 },
+  { label: "Over Rs. 6,000", min: 6000 },
+];
+
+const Section = ({ title, children, defaultOpen = true }) => (
+  <details className="group border-b border-stone-200 py-5" open={defaultOpen}>
+    <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-semibold uppercase tracking-wider">
+      {title}
+      <FiChevronDown className="h-4 w-4 text-ink-muted transition group-open:rotate-180" />
+    </summary>
+    <div className="pt-4">{children}</div>
+  </details>
+);
 
 const FilterSidebar = ({ onClose }) => {
+  const dispatch = useDispatch();
+  const facets = useSelector((state) => state.products.facets);
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const [filter, setFilter] = useState({
-    category: "",
-    gender: "",
-    color: "",
-    size: [],
-    material: [],
-    brand: [],
-    minPrice: 0,
-    maxPrice: DEFAULT_MAX_PRICE,
-  });
-  const [priceRange, setPriceRange] = useState([0, DEFAULT_MAX_PRICE]);
-
-  const categories = ["Top Wear", "Bottom Wear"];
-  const colors = [
-    { name: "Red", value: "bg-red-500" },
-    { name: "Blue", value: "bg-blue-500" },
-    { name: "Black", value: "bg-gray-900" },
-    { name: "Green", value: "bg-green-500" },
-    { name: "Yellow", value: "bg-yellow-400" },
-    { name: "Gray", value: "bg-gray-500" },
-    { name: "White", value: "bg-white border border-gray-300" },
-    { name: "Pink", value: "bg-pink-400" },
-    { name: "Beige", value: "bg-amber-100" },
-    { name: "Navy", value: "bg-blue-800" },
-  ];
-  const sizes = ["XS", "S", "M", "L", "XL", "XXL"];
-  const materials = ["Cotton", "Wool", "Denim", "Polyester", "Silk", "Linen"];
-  const brands = ["Urban Threads", "Sodern Fit", "Street Style"];
-  const genders = ["Men", "Women"];
+  const [priceDraft, setPriceDraft] = useState({ min: "", max: "" });
 
   useEffect(() => {
-    const params = Object.fromEntries([...searchParams]);
-    setFilter({
-      category: params.category || "",
-      gender: params.gender || "",
-      color: params.color || "",
-      size: params.size ? params.size.split(",") : [],
-      material: params.material ? params.material.split(",") : [],
-      brand: params.brand ? params.brand.split(",") : [],
-      minPrice: params.minPrice || 0,
-      maxPrice: params.maxPrice || DEFAULT_MAX_PRICE,
-    });
-    setPriceRange([0, params.maxPrice || DEFAULT_MAX_PRICE]);
+    dispatch(fetchFacets());
+  }, [dispatch]);
+
+  useEffect(() => {
+    setPriceDraft({ min: searchParams.get("minPrice") || "", max: searchParams.get("maxPrice") || "" });
   }, [searchParams]);
 
-  const handleCheckboxChange = (e) => {
-    const { name, value, checked } = e.target;
-    const newFilters = { ...filter };
+  const getList = (key) => (searchParams.get(key) || "").split(",").filter(Boolean);
 
-    if (checked) {
-      newFilters[name] = [...(newFilters[name] || []), value];
-    } else {
-      newFilters[name] = newFilters[name].filter((item) => item !== value);
-    }
-
-    setFilter(newFilters);
-    updateURLParams(newFilters);
-  };
-
-  const handleSingleSelect = (name, value) => {
-    const newValue = filter[name] === value ? "" : value;
-    const newFilters = { ...filter, [name]: newValue };
-    setFilter(newFilters);
-    updateURLParams(newFilters);
-  };
-
-  const handlePriceChange = (e) => {
-    const newPrice = e.target.value;
-    setPriceRange([0, newPrice]);
-    const newFilters = { ...filter, minPrice: 0, maxPrice: newPrice };
-    setFilter(newFilters);
-    updateURLParams(newFilters);
-  };
-
-  const updateURLParams = (newFilters) => {
-    const params = new URLSearchParams();
-    Object.keys(newFilters).forEach((key) => {
-      if (Array.isArray(newFilters[key]) && newFilters[key].length > 0) {
-        params.append(key, newFilters[key].join(","));
-      } else if (newFilters[key]) {
-        params.append(key, newFilters[key]);
-      }
+  const update = (changes) => {
+    const params = new URLSearchParams(searchParams);
+    Object.entries(changes).forEach(([key, value]) => {
+      const v = Array.isArray(value) ? value.join(",") : value;
+      if (v === undefined || v === null || v === "" || v === false) params.delete(key);
+      else params.set(key, v);
     });
     setSearchParams(params);
-    navigate(`?${params.toString()}`);
   };
+
+  const toggleSingle = (key, value) => update({ [key]: searchParams.get(key) === value ? "" : value });
+
+  const toggleMulti = (key, value) => {
+    const list = getList(key);
+    update({ [key]: list.includes(value) ? list.filter((v) => v !== value) : [...list, value] });
+  };
+
+  const applyPrice = (min, max) => update({ minPrice: min || "", maxPrice: max || "" });
+
+  const activeCount = FILTER_KEYS.filter((k) => searchParams.get(k)).length;
 
   const clearAll = () => {
-    setFilter({
-      category: "",
-      gender: "",
-      color: "",
-      size: [],
-      material: [],
-      brand: [],
-      minPrice: 0,
-      maxPrice: DEFAULT_MAX_PRICE,
-    });
-    setPriceRange([0, DEFAULT_MAX_PRICE]);
-    navigate(window.location.pathname);
+    const params = new URLSearchParams(searchParams);
+    FILTER_KEYS.forEach((k) => params.delete(k));
+    setSearchParams(params);
   };
 
-  const activeFilterCount =
-    (filter.category ? 1 : 0) +
-    (filter.gender ? 1 : 0) +
-    (filter.color ? 1 : 0) +
-    filter.size.length +
-    filter.material.length +
-    filter.brand.length +
-    (Number(priceRange[1]) < DEFAULT_MAX_PRICE ? 1 : 0);
-
-  const FilterSection = ({ title, children }) => (
-    <div className="mb-6 pb-5 border-b border-gray-100 last:border-0 last:pb-0 last:mb-0">
-      <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider mb-3.5">
-        {title}
-      </h4>
-      {children}
-    </div>
-  );
-
-  const PillOption = ({ label, active, onClick }) => (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`px-4 py-2 rounded-full text-sm font-medium border transition-all duration-150 ${
-        active
-          ? "bg-indigo-600 border-indigo-600 text-white shadow-sm shadow-indigo-200"
-          : "bg-white border-gray-200 text-gray-700 hover:border-indigo-300 hover:text-indigo-700"
-      }`}
-    >
-      {label}
-    </button>
-  );
+  const pill = (active) =>
+    `rounded-full border px-4 py-2 text-sm transition ${active ? "border-ink bg-ink text-white" : "border-stone-300 hover:border-ink"}`;
 
   return (
-    <div className="flex h-full flex-col bg-white lg:h-auto">
-      {/* Header */}
-      <div className="flex flex-shrink-0 justify-between items-center px-5 py-4 lg:px-0 lg:pb-4 border-b border-gray-200">
-        <div className="flex items-center gap-2 text-gray-900">
-          <FiSliders className="h-4 w-4 text-indigo-600" />
-          <h3 className="text-base font-bold">Filters</h3>
-          {activeFilterCount > 0 && (
-            <span className="ml-0.5 inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-indigo-600 text-white text-xs font-semibold">
-              {activeFilterCount}
-            </span>
-          )}
-        </div>
+    <div className="flex h-full flex-col bg-white">
+      <div className="flex items-center justify-between border-b border-stone-200 px-5 py-4 lg:px-0 lg:pt-0">
+        <h3 className="text-sm font-semibold">
+          Filters {activeCount > 0 && <span className="ml-1 rounded-full bg-ink px-2 py-0.5 text-[10px] text-white">{activeCount}</span>}
+        </h3>
         <div className="flex items-center gap-3">
-          {activeFilterCount > 0 && (
-            <button
-              onClick={clearAll}
-              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 underline-offset-2 hover:underline"
-            >
+          {activeCount > 0 && (
+            <button onClick={clearAll} className="text-xs font-semibold link-underline">
               Clear all
             </button>
           )}
           {onClose && (
-            <button
-              onClick={onClose}
-              aria-label="Close filters"
-              className="lg:hidden text-gray-500 hover:text-gray-800 p-1 -m-1"
-            >
+            <button onClick={onClose} aria-label="Close filters" className="rounded-full p-1 hover:bg-stone-100 lg:hidden">
               <FiX className="h-5 w-5" />
             </button>
           )}
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto lg:overflow-visible px-5 py-4 lg:px-0 lg:pt-5">
-        {/* Category Filter */}
-        <FilterSection title="Category">
+      <div className="flex-1 overflow-y-auto px-5 lg:overflow-visible lg:px-0">
+        <Section title="Gender">
           <div className="flex flex-wrap gap-2">
-            {categories.map((category) => (
-              <PillOption
-                key={category}
-                label={category}
-                active={filter.category === category}
-                onClick={() => handleSingleSelect("category", category)}
-              />
-            ))}
-          </div>
-        </FilterSection>
-
-        {/* Gender Filter */}
-        <FilterSection title="Gender">
-          <div className="flex flex-wrap gap-2">
-            {genders.map((gender) => (
-              <PillOption
-                key={gender}
-                label={gender}
-                active={filter.gender === gender}
-                onClick={() => handleSingleSelect("gender", gender)}
-              />
-            ))}
-          </div>
-        </FilterSection>
-
-        {/* Color Filter */}
-        <FilterSection title="Color">
-          <div className="flex flex-wrap gap-2.5">
-            {colors.map((color) => (
-              <button
-                key={color.name}
-                type="button"
-                onClick={() => handleSingleSelect("color", color.name)}
-                className={`relative w-8 h-8 rounded-full transition-all duration-200 hover:scale-110 ${color.value} ${
-                  filter.color === color.name
-                    ? "ring-2 ring-offset-2 ring-indigo-500"
-                    : "ring-1 ring-gray-200"
-                }`}
-                aria-label={color.name}
-                title={color.name}
-              >
-                {filter.color === color.name && (
-                  <FiCheck
-                    className={`absolute inset-0 m-auto h-4 w-4 ${
-                      ["White", "Yellow", "Beige"].includes(color.name)
-                        ? "text-gray-900"
-                        : "text-white"
-                    }`}
-                  />
-                )}
+            {(facets?.genders || ["Men", "Women"]).map((g) => (
+              <button key={g} onClick={() => toggleSingle("gender", g)} className={pill(searchParams.get("gender") === g)}>
+                {g}
               </button>
             ))}
           </div>
-        </FilterSection>
+        </Section>
 
-        {/* Size Filter */}
-        <FilterSection title="Size">
-          <div className="grid grid-cols-3 gap-2">
-            {sizes.map((size) => (
-              <label
-                key={size}
-                className="flex items-center justify-center cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  name="size"
-                  value={size}
-                  checked={filter.size.includes(size)}
-                  onChange={handleCheckboxChange}
-                  className="hidden"
-                />
-                <div
-                  className={`w-full py-2 text-center text-sm rounded-lg border transition-colors ${
-                    filter.size.includes(size)
-                      ? "border-indigo-600 bg-indigo-600 text-white font-medium"
-                      : "border-gray-200 hover:border-indigo-300 text-gray-700"
-                  }`}
-                >
+        <Section title="Category">
+          <div className="flex flex-wrap gap-2">
+            {(facets?.categories || ["Top Wear", "Bottom Wear"]).map((c) => (
+              <button key={c} onClick={() => toggleSingle("category", c)} className={pill(searchParams.get("category") === c)}>
+                {c}
+              </button>
+            ))}
+          </div>
+        </Section>
+
+        <Section title="Size">
+          <div className="grid grid-cols-4 gap-2">
+            {(facets?.sizes || []).map((size) => {
+              const active = getList("size").includes(size);
+              return (
+                <button key={size} onClick={() => toggleMulti("size", size)} aria-pressed={active} className={`rounded-xl border py-2 text-sm transition ${active ? "border-ink bg-ink text-white" : "border-stone-300 hover:border-ink"}`}>
                   {size}
-                </div>
-              </label>
-            ))}
+                </button>
+              );
+            })}
           </div>
-        </FilterSection>
+        </Section>
 
-        {/* Material Filter */}
-        <FilterSection title="Material">
+        <Section title="Colour">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-2.5">
+            {(facets?.colors || []).map((color) => {
+              const active = getList("color").includes(color);
+              return (
+                <button key={color} onClick={() => toggleMulti("color", color)} aria-pressed={active} className="flex items-center gap-2.5 text-left text-sm">
+                  <span className={`relative h-5 w-5 flex-shrink-0 rounded-full ring-1 ring-inset ring-black/10 ${active ? "ring-2 ring-ink ring-offset-1" : ""}`} style={swatchStyle(color)}>
+                    {active && <span className={`absolute inset-0 m-auto h-1.5 w-1.5 rounded-full ${isLightColor(color) ? "bg-ink" : "bg-white"}`} />}
+                  </span>
+                  <span className={active ? "font-semibold" : "text-ink-soft"}>{color}</span>
+                </button>
+              );
+            })}
+          </div>
+        </Section>
+
+        <Section title="Price">
+          <div className="space-y-2">
+            {PRICE_PRESETS.map((preset) => {
+              const active =
+                String(preset.min || "") === (searchParams.get("minPrice") || "") &&
+                String(preset.max || "") === (searchParams.get("maxPrice") || "");
+              return (
+                <label key={preset.label} className="flex cursor-pointer items-center gap-3 text-sm">
+                  <input type="radio" name="price" checked={active} onChange={() => applyPrice(preset.min, preset.max)} className="h-4 w-4 accent-ink" />
+                  <span className={active ? "font-semibold" : "text-ink-soft"}>{preset.label}</span>
+                </label>
+              );
+            })}
+          </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              applyPrice(priceDraft.min, priceDraft.max);
+            }}
+            className="mt-4 flex items-center gap-2"
+          >
+            <input type="number" min="0" placeholder="Min" value={priceDraft.min} onChange={(e) => setPriceDraft({ ...priceDraft, min: e.target.value })} className="input px-3 py-2" aria-label="Minimum price" />
+            <span className="text-ink-muted">-</span>
+            <input type="number" min="0" placeholder="Max" value={priceDraft.max} onChange={(e) => setPriceDraft({ ...priceDraft, max: e.target.value })} className="input px-3 py-2" aria-label="Maximum price" />
+            <button type="submit" className="btn-outline px-4 py-2">Go</button>
+          </form>
+        </Section>
+
+        <Section title="Material" defaultOpen={false}>
           <div className="space-y-2.5">
-            {materials.map((material) => (
-              <label
-                key={material}
-                className="flex items-center space-x-3 cursor-pointer group"
-              >
-                <input
-                  type="checkbox"
-                  name="material"
-                  value={material}
-                  checked={filter.material.includes(material)}
-                  onChange={handleCheckboxChange}
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                />
-                <span className="text-sm text-gray-700 group-hover:text-gray-900">
-                  {material}
-                </span>
+            {(facets?.materials || []).map((material) => (
+              <label key={material} className="flex cursor-pointer items-center gap-3 text-sm">
+                <input type="checkbox" checked={getList("material").includes(material)} onChange={() => toggleMulti("material", material)} className="h-4 w-4 rounded accent-ink" />
+                <span className="text-ink-soft">{material}</span>
               </label>
             ))}
           </div>
-        </FilterSection>
+        </Section>
 
-        {/* Brand Filter */}
-        <FilterSection title="Brand">
+        <Section title="Brand" defaultOpen={false}>
           <div className="space-y-2.5">
-            {brands.map((brand) => (
-              <label
-                key={brand}
-                className="flex items-center space-x-3 cursor-pointer group"
-              >
-                <input
-                  type="checkbox"
-                  name="brand"
-                  value={brand}
-                  checked={filter.brand.includes(brand)}
-                  onChange={handleCheckboxChange}
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                />
-                <span className="text-sm text-gray-700 group-hover:text-gray-900">
-                  {brand}
-                </span>
+            {(facets?.brands || []).map((brand) => (
+              <label key={brand} className="flex cursor-pointer items-center gap-3 text-sm">
+                <input type="checkbox" checked={getList("brand").includes(brand)} onChange={() => toggleMulti("brand", brand)} className="h-4 w-4 rounded accent-ink" />
+                <span className="text-ink-soft">{brand}</span>
               </label>
             ))}
           </div>
-        </FilterSection>
+        </Section>
 
-        {/* Price Filter */}
-        <FilterSection title="Price Range">
-          <div className="px-1">
-            <div className="flex justify-between items-baseline mb-3">
-              <span className="text-sm text-gray-500">Up to</span>
-              <span className="text-base font-bold text-indigo-700">
-                {formatPrice(priceRange[1])}
-              </span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max={DEFAULT_MAX_PRICE}
-              step="500"
-              value={priceRange[1]}
-              onChange={handlePriceChange}
-              className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600
-                [&::-webkit-slider-thumb]:appearance-none
-                [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4
-                [&::-webkit-slider-thumb]:rounded-full
-                [&::-webkit-slider-thumb]:bg-indigo-600
-                [&::-webkit-slider-thumb]:shadow-md"
-            />
-            <div className="flex justify-between mt-2 text-xs text-gray-400">
-              <span>{formatPrice(0)}</span>
-              <span>{formatPrice(DEFAULT_MAX_PRICE)}</span>
-            </div>
+        <Section title="Availability">
+          <div className="space-y-2.5">
+            <label className="flex cursor-pointer items-center gap-3 text-sm">
+              <input type="checkbox" checked={searchParams.get("inStock") === "true"} onChange={(e) => update({ inStock: e.target.checked ? "true" : "" })} className="h-4 w-4 rounded accent-ink" />
+              <span className="text-ink-soft">In stock only</span>
+            </label>
+            <label className="flex cursor-pointer items-center gap-3 text-sm">
+              <input type="checkbox" checked={searchParams.get("onSale") === "true"} onChange={(e) => update({ onSale: e.target.checked ? "true" : "" })} className="h-4 w-4 rounded accent-ink" />
+              <span className="text-ink-soft">On sale</span>
+            </label>
           </div>
-        </FilterSection>
+        </Section>
       </div>
+
+      {onClose && (
+        <div className="border-t border-stone-200 p-4 lg:hidden">
+          <button onClick={onClose} className="btn-primary w-full">Show results</button>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,51 +1,30 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
-import feature from '../../assets/featured.webp'
+import React from "react";
+import { Link } from "react-router-dom";
+import feature from "../../assets/featured.webp";
 
 const FeaturedCollection = () => {
   return (
-    <section className='py-16 md:py-24 px-4 sm:px-6 lg:px-8'>
-      <div className='max-w-7xl mx-auto flex flex-col lg:flex-row items-center bg-gradient-to-br from-indigo-50 to-purple-50 rounded-3xl overflow-hidden shadow-lg'>
-        {/* Text Content */}
-        <div className='lg:w-1/2 p-8 md:p-12 lg:p-16 text-center lg:text-left'>
-          <span className='inline-block text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-3'>
-            Comfort & Style
-          </span>
-          <h2 className='text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight'>
-            Apparel Designed for <span className='text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600'>Everyday Life</span>
-          </h2>
-          <p className='text-lg text-gray-600 mb-8 max-w-lg mx-auto lg:mx-0'>
-            Discover our premium collection crafted for effortless style and all-day comfort. 
-            Perfect for work, weekends, and everything in between.
+    <section className="container-page mt-24">
+      <div className="grid overflow-hidden rounded-[2rem] bg-cream lg:grid-cols-2">
+        <div className="flex flex-col justify-center p-10 md:p-16">
+          <p className="eyebrow">Comfort &amp; style</p>
+          <h2 className="heading-display mt-3 text-4xl leading-tight md:text-5xl">Apparel designed for everyday life.</h2>
+          <p className="mt-5 max-w-md text-ink-soft">
+            Breathable cottons and easy fits that take you from the office to the weekend. Pieces you'll reach for again and again.
           </p>
-          <div className='flex flex-col sm:flex-row gap-4 justify-center lg:justify-start'>
-            <Link 
-              to="/collections/all" 
-              className='bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-300 shadow-md hover:shadow-lg text-lg'
-            >
-              Shop Collection
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link to="/collections/essentials" className="btn-primary">
+              Shop essentials
             </Link>
-            <Link 
-              to="/collections/new-arrivals" 
-              className='border-2 border-gray-300 hover:border-indigo-400 text-gray-800 hover:text-indigo-700 px-8 py-3 rounded-lg font-medium transition-all duration-300 text-lg'
-            >
-              New Arrivals
+            <Link to="/collections/workwear" className="btn-outline">
+              Workwear edit
             </Link>
           </div>
         </div>
-
-        {/* Image Content */}
-        <div className='lg:w-1/2 h-full'>
-          <img 
-            src={feature} 
-            alt="Featured Collection - Everyday Apparel" 
-            className='w-full h-full max-h-[500px] object-cover object-center lg:rounded-r-3xl'
-            loading='lazy'
-          />
-        </div>
+        <img src={feature} alt="Everyday apparel collection" loading="lazy" className="h-full max-h-[560px] w-full object-cover" />
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default FeaturedCollection
+export default FeaturedCollection;

@@ -1,63 +1,40 @@
-import React from 'react'
-import HeroImg from '../../assets/rabbit-hero.jpg'
-import { Link } from 'react-router-dom'
+import React from "react";
+import { Link } from "react-router-dom";
+import HeroImg from "../../assets/rabbit-hero.jpg";
 
 const Hero = () => {
   return (
-    <section className="relative overflow-hidden">
-      {/* Hero Image with Gradient Overlay */}
-      <div className="relative w-full h-[70vh] min-h-[500px] max-h-[800px]">
-        <img 
-          src={HeroImg} 
-          alt="Vacation Ready Fashion" 
-          className="w-full h-full object-cover object-center"
+    <section className="container-page pt-4">
+      <div className="relative overflow-hidden rounded-[2rem]">
+        <img
+          src={HeroImg}
+          alt="Two friends in light summer clothing at the beach"
+          className="h-[78vh] max-h-[760px] min-h-[520px] w-full object-cover object-center"
+          loading="eager"
         />
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/70 via-gray-900/30 to-transparent" />
-      </div>
-
-      {/* Hero Content */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="container mx-auto px-6 text-center">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-            <span className="block">Vacation</span>
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-300">
-              Ready
-            </span>
-          </h1>
-          
-          <p className="text-lg md:text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
-            Discover our premium vacation collection designed for comfort and style. 
-            Fast worldwide shipping and easy returns.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link 
-              to="/collections/vacation" 
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl text-lg"
-            >
-              Shop Collection
-            </Link>
-            <Link 
-              to="/collections/new-arrivals" 
-              className="bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-lg font-medium transition-all duration-300 border border-white/20 hover:border-white/30 text-lg backdrop-blur-sm"
-            >
-              New Arrivals
-            </Link>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/30 to-transparent" />
+        <div className="absolute inset-0 flex items-end md:items-center">
+          <div className="max-w-xl p-8 text-white md:p-16">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/80">New season</p>
+            <h1 className="mt-4 font-display text-5xl font-medium leading-[1.05] md:text-7xl">
+              Clothes for wherever you're going.
+            </h1>
+            <p className="mt-5 max-w-md text-base text-white/85 md:text-lg">
+              Easy linen, sharp shirting and denim that lasts. Designed and made in Pakistan.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link to="/collections/all?gender=Women" className="btn-light">
+                Shop women
+              </Link>
+              <Link to="/collections/all?gender=Men" className="btn border border-white/40 text-white hover:bg-white/10">
+                Shop men
+              </Link>
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Scroll Indicator (Optional) */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
-        <div className="animate-bounce">
-          <svg className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-          </svg>
-        </div>
-      </div>
     </section>
-  )
-}
+  );
+};
 
-export default Hero
+export default Hero;

@@ -1,158 +1,110 @@
-import React, { useEffect, useRef } from "react";
-import { IoMdClose } from "react-icons/io";
-import CartContents from "../Cart/CartContents";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { IoMdClose } from "react-icons/io";
+import { HiOutlineShoppingBag } from "react-icons/hi2";
+import CartContents from "../Cart/CartContents";
+import { closeCartDrawer } from "../../redux/slices/cartSlice";
 import { formatPrice } from "../../utils/formatPrice";
 
-const CartDrawer = ({ drawerOpen, toggleCartDrawer }) => {
-  const { user, guestId } = useSelector((state) => state.auth);
-  const { cart } = useSelector((state) => state.cart);
-  const userId = user ? user._id : null;
-
+const CartDrawer = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const drawerRef = useRef(null);
+  const { cart, drawerOpen } = useSelector((state) => state.cart);
+  const { shipping } = useSelector((state) => state.store.config);
+
+  const close = () => dispatch(closeCartDrawer());
 
   useEffect(() => {
-    const handleOutsideClick = (event) => {
-      if (
-        drawerRef.current &&
-        !drawerRef.current.contains(event.target) &&
-        drawerOpen
-      ) {
-        toggleCartDrawer();
-      }
-    };
+    if (!drawerOpen) return undefined;
+    const onKey = (e) => e.key === "Escape" && close();
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drawerOpen]);
 
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-    };
-  }, [drawerOpen, toggleCartDrawer]);
+  const products = cart?.products || [];
+  const subtotal = products.reduce((total, item) => total + item.price * item.quantity, 0);
+  const remaining = Math.max(shipping.freeShippingThreshold - subtotal, 0);
+  const progress = Math.min((subtotal / shipping.freeShippingThreshold) * 100, 100);
 
   const handleCheckout = () => {
-    toggleCartDrawer();
-    if (user) {
-      navigate("/checkout");
-    } else {
-      navigate("/register?redirect=/checkout");
-    }
+    close();
+    navigate("/checkout");
   };
-
-  // Calculate subtotal as a fallback if cart.cartTotal is not available
-  const calculateSubtotal = () => {
-    if (cart?.cartTotal && cart.cartTotal > 0) {
-      return cart.cartTotal.toFixed(2);
-    }
-    
-    // Fallback calculation
-    if (cart?.products && cart.products.length > 0) {
-      const subtotal = cart.products.reduce((total, product) => {
-        return total + (product.price * product.quantity);
-      }, 0);
-      return subtotal.toFixed(2);
-    }
-    
-    return "0.00";
-  };
-
-  const subtotal = calculateSubtotal();
 
   return (
     <>
-      {/* Overlay */}
       <div
-        className={`fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 ease-in-out ${
-          drawerOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 z-50 bg-ink/40 transition-opacity duration-300 ${drawerOpen ? "opacity-100" : "pointer-events-none opacity-0"}`}
+        onClick={close}
       />
 
-      {/* Drawer */}
-      <div
-        ref={drawerRef}
-        className={`fixed top-0 right-0 w-full sm:w-96 h-full bg-white shadow-xl transform transition-all duration-300 ease-in-out flex flex-col z-50 ${
+      <aside
+        className={`fixed right-0 top-0 z-50 flex h-full w-full flex-col bg-white shadow-lift transition-transform duration-300 ease-out sm:w-[420px] ${
           drawerOpen ? "translate-x-0" : "translate-x-full"
         }`}
+        aria-label="Shopping cart"
+        aria-hidden={!drawerOpen}
       >
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-gray-900">Your Shopping Cart</h2>
-          <button
-            onClick={toggleCartDrawer}
-            className="text-gray-500 hover:text-indigo-600 transition-colors duration-200 p-1 rounded-full"
-            aria-label="Close cart"
-          >
+        <div className="flex items-center justify-between border-b border-stone-200 px-6 py-5">
+          <h2 className="heading-display text-2xl">
+            Your bag {products.length > 0 && <span className="font-sans text-sm text-ink-muted">({cart.itemCount || products.length})</span>}
+          </h2>
+          <button onClick={close} className="rounded-full p-1.5 text-ink-muted hover:bg-stone-100 hover:text-ink" aria-label="Close cart">
             <IoMdClose className="h-6 w-6" />
           </button>
         </div>
 
-        {/* Cart Contents */}
-        <div className="flex-grow p-6 overflow-y-auto">
-          {cart?.products?.length > 0 ? (
-            <CartContents cart={cart} userId={userId} guestId={guestId} />
+        {products.length > 0 && (
+          <div className="border-b border-stone-200 px-6 py-4">
+            <p className="text-xs text-ink-soft">
+              {remaining > 0 ? (
+                <>
+                  You're <span className="font-semibold text-ink">{formatPrice(remaining)}</span> away from free delivery
+                </>
+              ) : (
+                <span className="font-semibold text-success">You've unlocked free delivery</span>
+              )}
+            </p>
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-stone-200">
+              <div className="h-full rounded-full bg-ink transition-all duration-500" style={{ width: `${progress}%` }} />
+            </div>
+          </div>
+        )}
+
+        <div className="flex-1 overflow-y-auto px-6 py-5">
+          {products.length > 0 ? (
+            <CartContents cart={cart} onNavigate={close} compact />
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-center">
-              <svg
-                className="h-16 w-16 text-gray-300 mb-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-              </svg>
-              <p className="text-gray-600 mb-4 text-lg">Your cart is empty</p>
-              <button
-                onClick={toggleCartDrawer}
-                className="text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200 flex items-center"
-              >
-                Continue Shopping
-                <svg
-                  className="ml-2 h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M14 5l7 7m0 0l-7 7m7-7H3"
-                  />
-                </svg>
-              </button>
+            <div className="flex h-full flex-col items-center justify-center text-center">
+              <HiOutlineShoppingBag className="mb-4 h-12 w-12 text-stone-300" />
+              <p className="heading-display text-xl">Your bag is empty</p>
+              <p className="mt-1 max-w-xs text-sm text-ink-muted">Find something you love and it will show up here.</p>
+              <div className="mt-6 flex flex-col gap-2">
+                <button onClick={() => { close(); navigate("/collections/all"); }} className="btn-primary">
+                  Start shopping
+                </button>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Footer */}
-        {cart?.products?.length > 0 && (
-          <div className="p-6 border-t border-gray-100 bg-white sticky bottom-0">
-            <div className="flex justify-between mb-4">
-              <span className="text-gray-600">Subtotal</span>
-              <span className="font-medium text-gray-900">
-                {formatPrice(subtotal)}
-              </span>
+        {products.length > 0 && (
+          <div className="border-t border-stone-200 bg-white px-6 py-5">
+            <div className="mb-4 flex items-center justify-between">
+              <span className="text-sm text-ink-soft">Subtotal</span>
+              <span className="text-lg font-semibold">{formatPrice(subtotal)}</span>
             </div>
-            <button
-              onClick={handleCheckout}
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-3 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-            >
-              Proceed to Checkout
+            <button onClick={handleCheckout} className="btn-primary w-full py-3.5">
+              Checkout
             </button>
-            <p className="text-xs text-gray-500 mt-3 text-center">
-              Shipping, taxes, and discount codes calculated at checkout.
+            <p className="mt-3 text-center text-xs text-ink-muted">
+              Cash on delivery · Shipping and promo codes at checkout
             </p>
-            
           </div>
         )}
-      </div>
+      </aside>
     </>
   );
 };

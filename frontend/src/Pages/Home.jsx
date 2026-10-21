@@ -1,67 +1,24 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Hero from "../components/Layout/Hero";
 import GenderCollectionSection from "../components/Product/GenderCollectionSection";
-import NewArrivals from "../components/Product/NewArrivals";
-import ProductDetails from "../components/Product/ProductDetail";
-import ProductGrid from "../components/Product/ProductGrid";
+import NewArrivals, { ProductCarousel } from "../components/Product/NewArrivals";
 import FeaturedCollection from "../components/Product/FeaturedCollection";
 import FeaturesSection from "../components/Product/FeaturesSection";
-import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
-import {fetchProductsByFilters} from "../redux/slices/productSlice"
-
+import usePageTitle from "../hooks/usePageTitle";
 
 const Home = () => {
-
-  const dispatch=useDispatch(); 
-  const {products,loading,error}=useSelector((state)=>state.products);
-  const [bestSellerProduct,setbestSellerProduct]=useState(null);
-
-  useEffect(()=>{
-    //fetch product for a specific collection
-    dispatch(
-      fetchProductsByFilters({
-        gender:"Women",
-        category:"Bottom Wear",
-        limit:8
-      })
-    );
-    //fetch best seller product
-    const fetchBestSeller=async()=>{
-      try {
-          const response=await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/products/best-seller`);
-          setbestSellerProduct(response.data)
-          
-      } catch (error) {
-        console.error(error);
-        
-      }
-    };
-    fetchBestSeller();
-
-  },[dispatch])
+  usePageTitle();
 
   return (
     <div>
       <Hero />
       <GenderCollectionSection />
       <NewArrivals />
-
-      {/* best seller */}
-      <h2 className="text-3xl text-center font-bold mb-4">Best Seller</h2>
-      {bestSellerProduct?(<ProductDetails productId={bestSellerProduct._id} />):(
-        <p className="text-center">Loading best seller product ...</p>
-      )}
-      
-
-      <div className="container mx-auto">
-        <h2 className="text-3xl text-center font-bold mb-4">
-          Top Wears For Women
-        </h2>
-        <ProductGrid products={products} loading={loading} error={error}/>
-      </div>
-      <FeaturedCollection/>
-      <FeaturesSection/>
+      <ProductCarousel eyebrow="Customer favourites" title="Best sellers" endpoint="/products/best-sellers?limit=10" viewAllTo="/collections/all?sortBy=popularity" />
+      <ProductCarousel eyebrow="Limited time" title="On sale now" endpoint="/products?collection=sale&limit=10" viewAllTo="/collections/sale" />
+      <FeaturedCollection />
+      <ProductCarousel eyebrow="For her" title="Women's bottoms" endpoint="/products?gender=Women&category=Bottom Wear&limit=10" viewAllTo="/collections/all?gender=Women&category=Bottom Wear" />
+      <FeaturesSection />
     </div>
   );
 };
