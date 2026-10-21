@@ -74,4 +74,19 @@ function sendOrderConfirmation(order) {
   });
 }
 
-module.exports = { transporter, sendOtpEmail, sendOrderConfirmation };
+// Forwards a contact-form message to the store inbox; replies go to the customer.
+function sendContactMessage({ name, email, subject, message }) {
+  return transporter.sendMail({
+    from: FROM(),
+    to: process.env.EMAIL_USER,
+    replyTo: email,
+    subject: `[Contact] ${subject || "New message"} - ${name}`,
+    html: layout(
+      "New contact form message",
+      `<p><strong>${escapeHtml(name)}</strong> (${escapeHtml(email)})</p>
+       <p style="white-space: pre-wrap;">${escapeHtml(message)}</p>`
+    ),
+  });
+}
+
+module.exports = { transporter, sendOtpEmail, sendOrderConfirmation, sendContactMessage };
