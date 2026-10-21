@@ -5,10 +5,12 @@ import NewArrivals, { ProductCarousel } from "../components/Product/NewArrivals"
 import FeaturedCollection from "../components/Product/FeaturedCollection";
 import FeaturesSection from "../components/Product/FeaturesSection";
 import AssistantPromo from "../components/Agent/AssistantPromo";
-import usePageTitle from "../hooks/usePageTitle";
+import useSeo from "../hooks/useSeo";
+import { organizationJsonLd, websiteJsonLd } from "../utils/seo";
 
 const Home = () => {
-  usePageTitle();
+  const origin = window.location.origin;
+  useSeo({ path: "/", jsonLd: [organizationJsonLd(origin), websiteJsonLd(origin)] });
 
   return (
     <div>

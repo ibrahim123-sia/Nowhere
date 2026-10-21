@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { HiMagnifyingGlass, HiMiniXMark } from "react-icons/hi2";
 import api from "../../utils/api";
 import { formatPrice } from "../../utils/formatPrice";
-import { imageUrl } from "../../utils/product";
+import { imageUrl, productPath } from "../../utils/product";
 
 const POPULAR = ["Linen", "Denim", "White shirt", "Joggers", "Workwear", "Summer"];
 
@@ -113,7 +113,7 @@ const SearchBar = ({ className = "" }) => {
                   <ul>
                     {suggestions.map((item) => (
                       <li key={item._id}>
-                        <Link to={`/product/${item._id}`} onClick={close} className="flex items-center gap-4 rounded-2xl p-2 transition hover:bg-stone-50">
+                        <Link to={productPath(item)} onClick={close} className="flex items-center gap-4 rounded-2xl p-2 transition hover:bg-stone-50">
                           <img src={imageUrl(item.image, 120)} alt="" className="h-14 w-12 rounded-lg object-cover" />
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-medium">{item.name}</p>

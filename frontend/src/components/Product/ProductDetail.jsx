@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import { FiMinus, FiPlus, FiHeart, FiShare2, FiTruck, FiRefreshCw, FiCreditCard, FiChevronDown } from "react-icons/fi";
@@ -15,9 +15,10 @@ import { addToCart, openCartDrawer } from "../../redux/slices/cartSlice";
 import { toggleWishlist } from "../../redux/slices/wishlistSlice";
 import { openAgent, sendAgentMessage } from "../../redux/slices/agentSlice";
 import { formatPrice } from "../../utils/formatPrice";
-import { imageSrcSet, imageUrl, isLightColor, swatchStyle } from "../../utils/product";
+import { imageSrcSet, imageUrl, isLightColor, productIdFromParam, productPath, swatchStyle } from "../../utils/product";
+import { breadcrumbJsonLd, productBreadcrumbs, productDescription, productJsonLd } from "../../utils/seo";
 import { addRecentlyViewed, getRecentlyViewed } from "../../utils/recentlyViewed";
-import usePageTitle from "../../hooks/usePageTitle";
+import useSeo from "../../hooks/useSeo";
 
 const Accordion = ({ title, children, defaultOpen = false }) => (
   <details className="group border-b border-stone-200 py-4" open={defaultOpen}>
@@ -39,13 +40,17 @@ const deliveryWindow = (days) => {
 };
 
 const ProductDetail = () => {
-  const { id } = useParams();
+  const { id: param } = useParams();
+  const id = productIdFromParam(param);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { selectedProduct: product, detailLoading, detailError, similarProducts, similarLoading } = useSelector(
     (state) => state.products
   );
   const { shipping } = useSelector((state) => state.store.config);
   const { streaming } = useSelector((state) => state.agent);
+  const reviewData = useSelector((state) => state.products.reviews);
   const wishlisted = useSelector((state) => state.wishlist.items.some((item) => item._id === id));
 
   const [activeImage, setActiveImage] = useState(0);
@@ -57,7 +62,27 @@ const ProductDetail = () => {
   const [guideOpen, setGuideOpen] = useState(false);
 
   const current = product?._id === id ? product : null;
-  usePageTitle(current?.name);
+  const origin = window.location.origin;
+  const reviews = reviewData.productId === id ? reviewData.reviews : [];
+  useSeo(
+    current
+      ? {
+          title: current.name,
+          description: productDescription(current),
+          image: current.images?.[0]?.url,
+          path: productPath(current),
+          type: "product",
+          jsonLd: [productJsonLd(origin, current, reviews), breadcrumbJsonLd(origin, productBreadcrumbs(current))],
+        }
+      : { title: "Product" }
+  );
+
+  // Old /product/<id> links move to the readable /product/<slug>-<id> URL.
+  useEffect(() => {
+    if (current && location.pathname !== productPath(current)) {
+      navigate(`${productPath(current)}${location.hash}`, { replace: true });
+    }
+  }, [current, location.pathname, location.hash, navigate]);
 
   useEffect(() => {
     dispatch(fetchProductDetails(id));

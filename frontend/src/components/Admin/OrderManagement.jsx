@@ -9,13 +9,13 @@ import ConfirmDialog from "./ConfirmDialog";
 import { ErrorState } from "../Common/Feedback";
 import { formatPrice } from "../../utils/formatPrice";
 import { formatDate, orderRef } from "../../utils/order";
-import usePageTitle from "../../hooks/usePageTitle";
+import useSeo from "../../hooks/useSeo";
 
 const STATUSES = ["Processing", "Shipped", "Delivered", "Cancelled"];
 const NEXT = { Processing: ["Shipped", "Cancelled"], Shipped: ["Delivered"], Delivered: [], Cancelled: [] };
 
 const OrderManagement = () => {
-  usePageTitle("Orders");
+  useSeo({ title: "Orders", noindex: true });
   const dispatch = useDispatch();
   const [params, setParams] = useSearchParams();
   const statusFilter = params.get("status") || "";

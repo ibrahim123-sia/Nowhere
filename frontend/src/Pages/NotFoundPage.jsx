@@ -1,9 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import usePageTitle from "../hooks/usePageTitle";
+import useSeo from "../hooks/useSeo";
 
 const NotFoundPage = () => {
-  usePageTitle("Page not found");
+  useSeo({ title: "Page not found", noindex: true });
   return (
     <div className="container-page flex min-h-[60vh] flex-col items-center justify-center py-16 text-center">
       <p className="font-display text-8xl font-medium text-stone-300">404</p>

@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { logout, updateProfile } from "../redux/slices/authSlice";
 import { clearCart } from "../redux/slices/cartSlice";
 import { OrdersList } from "./MyOrdersPage";
-import usePageTitle from "../hooks/usePageTitle";
+import useSeo from "../hooks/useSeo";
 
 const TABS = [
   { id: "orders", label: "Orders" },
@@ -22,7 +22,7 @@ const Field = ({ label, id, ...props }) => (
 );
 
 const Profile = () => {
-  usePageTitle("My account");
+  useSeo({ title: "My account", noindex: true });
   const { user, loading } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();

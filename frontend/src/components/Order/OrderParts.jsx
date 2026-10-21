@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { FiCheck } from "react-icons/fi";
 import { formatPrice } from "../../utils/formatPrice";
-import { imageUrl } from "../../utils/product";
+import { imageUrl, productPath } from "../../utils/product";
 import { estimatedDelivery, formatDate } from "../../utils/order";
 
 const STEPS = ["Processing", "Shipped", "Delivered"];
@@ -61,7 +61,7 @@ export const OrderItems = ({ items, linkProducts = true }) => (
         <img src={imageUrl(item.image, 160)} alt={item.name} className="h-20 w-16 rounded-xl object-cover" />
         <div className="min-w-0 flex-1">
           {linkProducts ? (
-            <Link to={`/product/${item.productId}`} className="text-sm font-medium hover:underline">{item.name}</Link>
+            <Link to={productPath({ _id: item.productId, name: item.name })} className="text-sm font-medium hover:underline">{item.name}</Link>
           ) : (
             <p className="text-sm font-medium">{item.name}</p>
           )}

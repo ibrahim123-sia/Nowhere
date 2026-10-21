@@ -5,12 +5,15 @@ import { FiClock, FiMail, FiPhone } from "react-icons/fi";
 import { HiSparkles } from "react-icons/hi2";
 import api from "../../../utils/api";
 import { openAgent } from "../../../redux/slices/agentSlice";
-import usePageTitle from "../../../hooks/usePageTitle";
+import useSeo from "../../../hooks/useSeo";
 
 const EMPTY = { name: "", email: "", subject: "", message: "" };
 
 const ContactUsPage = () => {
-  usePageTitle("Contact us");
+  useSeo({
+    title: "Contact us",
+    description: "Questions about an order, sizing or a return? Contact Nowhere by email or phone, Monday to Saturday, or chat with Iris, our AI shopping assistant.",
+  });
   const dispatch = useDispatch();
   const { supportEmail, supportPhone, supportHours } = useSelector((state) => state.store.config);
   const [form, setForm] = useState(EMPTY);

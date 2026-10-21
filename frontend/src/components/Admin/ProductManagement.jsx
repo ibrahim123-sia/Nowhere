@@ -8,13 +8,13 @@ import ConfirmDialog from "./ConfirmDialog";
 import Price from "../Common/Price";
 import { ErrorState } from "../Common/Feedback";
 import { imageUrl } from "../../utils/product";
-import usePageTitle from "../../hooks/usePageTitle";
+import useSeo from "../../hooks/useSeo";
 
 const stockBadge = (count) =>
   count === 0 ? "bg-red-100 text-red-800" : count <= 5 ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800";
 
 const ProductManagement = () => {
-  usePageTitle("Products");
+  useSeo({ title: "Products", noindex: true });
   const dispatch = useDispatch();
   const { products, loading, error } = useSelector((state) => state.adminProducts);
   const [query, setQuery] = useState("");

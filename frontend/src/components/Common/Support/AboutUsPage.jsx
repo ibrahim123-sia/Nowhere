@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FiFeather, FiHeart, FiRepeat } from "react-icons/fi";
-import usePageTitle from "../../../hooks/usePageTitle";
+import useSeo from "../../../hooks/useSeo";
 
 const VALUES = [
   {
@@ -22,7 +22,10 @@ const VALUES = [
 ];
 
 const AboutUsPage = () => {
-  usePageTitle("About us");
+  useSeo({
+    title: "About us",
+    description: "Nowhere makes modern essentials for men and women in Pakistan: breathable cottons, linen blends and honest denim, with cash on delivery and 30-day returns.",
+  });
   return (
     <div className="container-page py-14">
       <div className="max-w-3xl">

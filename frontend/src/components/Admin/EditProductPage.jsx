@@ -6,10 +6,11 @@ import { FiArrowLeft, FiExternalLink } from "react-icons/fi";
 import ProductForm from "./ProductForm";
 import { fetchAdminProduct, updateProduct } from "../../redux/slices/adminProductSlice";
 import { ErrorState, PageLoader } from "../Common/Feedback";
-import usePageTitle from "../../hooks/usePageTitle";
+import { productPath } from "../../utils/product";
+import useSeo from "../../hooks/useSeo";
 
 const EditProductPage = () => {
-  usePageTitle("Edit product");
+  useSeo({ title: "Edit product", noindex: true });
   const dispatch = useDispatch();
   const { id } = useParams();
   const { current, loading, saving, error } = useSelector((state) => state.adminProducts);
@@ -37,7 +38,7 @@ const EditProductPage = () => {
       </Link>
       <div className="mb-6 mt-3 flex flex-wrap items-center justify-between gap-3">
         <h1 className="heading-display text-3xl">Edit product</h1>
-        <Link to={`/product/${id}`} target="_blank" className="btn-outline px-4 py-2 text-xs">
+        <Link to={productPath(current)} target="_blank" className="btn-outline px-4 py-2 text-xs">
           View in store <FiExternalLink />
         </Link>
       </div>

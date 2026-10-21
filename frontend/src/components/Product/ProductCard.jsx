@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import Price from "../Common/Price";
 import Rating from "../Common/Rating";
 import { toggleWishlist } from "../../redux/slices/wishlistSlice";
-import { discountPercent, imageSrcSet, imageUrl, isOnSale, swatchStyle } from "../../utils/product";
+import { discountPercent, imageSrcSet, imageUrl, isOnSale, productPath, swatchStyle } from "../../utils/product";
 
 const ProductCard = ({ product, sizes = "(min-width: 1280px) 22vw, (min-width: 768px) 30vw, 50vw" }) => {
   const dispatch = useDispatch();
@@ -26,7 +26,7 @@ const ProductCard = ({ product, sizes = "(min-width: 1280px) 22vw, (min-width: 7
 
   return (
     <article className="group relative">
-      <Link to={`/product/${product._id}`} className="block rounded-2xl focus-visible:ring-offset-4">
+      <Link to={productPath(product)} className="block rounded-2xl focus-visible:ring-offset-4">
         <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-stone-100">
           {primary?.url ? (
             <>

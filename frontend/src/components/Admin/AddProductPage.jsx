@@ -5,10 +5,10 @@ import { toast } from "sonner";
 import { FiArrowLeft } from "react-icons/fi";
 import ProductForm from "./ProductForm";
 import { createProduct } from "../../redux/slices/adminProductSlice";
-import usePageTitle from "../../hooks/usePageTitle";
+import useSeo from "../../hooks/useSeo";
 
 const AddProductPage = () => {
-  usePageTitle("Add product");
+  useSeo({ title: "Add product", noindex: true });
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { saving } = useSelector((state) => state.adminProducts);

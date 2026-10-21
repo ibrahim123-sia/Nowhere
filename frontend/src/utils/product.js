@@ -66,7 +66,20 @@ export const isLightColor = (name = "") =>
     name.toLowerCase()
   );
 
-export const slugify = (value = "") => value.toLowerCase().trim().replace(/\s+/g, "-");
+// URL-friendly version of a name, e.g. "Slim-Fit Shirt" -> "slim-fit-shirt".
+export const slugify = (value = "") =>
+  String(value)
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+// Readable product URL that still carries the id: /product/slim-fit-shirt-<id>
+export const productPath = (product) =>
+  product?.name ? `/product/${slugify(product.name)}-${product._id}` : `/product/${product?._id}`;
+
+// Accepts "/product/<id>" and "/product/<slug>-<id>" and returns the id.
+export const productIdFromParam = (param = "") => param.match(/([a-f0-9]{24})$/i)?.[1] || param;
 
 // URL query keys the collection filters use.
 export const FILTER_KEYS = ["gender", "category", "size", "color", "material", "brand", "minPrice", "maxPrice", "onSale", "inStock"];

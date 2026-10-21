@@ -4,11 +4,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { clearTrackedOrder, trackOrder } from "../redux/slices/orderSlice";
 import { OrderItems, OrderTimeline, OrderTotals, ShippingAddress, StatusBadge } from "../components/Order/OrderParts";
 import { formatDate, orderRef } from "../utils/order";
-import usePageTitle from "../hooks/usePageTitle";
+import useSeo from "../hooks/useSeo";
 
 // Order lookup for guests (and anyone on another device): order number + email.
 const TrackOrderPage = () => {
-  usePageTitle("Track your order");
+  useSeo({ title: "Track your order", noindex: true });
   const dispatch = useDispatch();
   const [params] = useSearchParams();
   const { trackedOrder: order, loading, error } = useSelector((state) => state.orders);

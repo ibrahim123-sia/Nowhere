@@ -39,4 +39,9 @@ export default [
       ],
     },
   },
+  {
+    // Vercel functions and the Vite config run on Node.
+    files: ['api/**/*.js', 'vite.config.js'],
+    languageOptions: { globals: globals.node },
+  },
 ]

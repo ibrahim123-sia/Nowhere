@@ -6,12 +6,12 @@ import registerImage from "../assets/register.jpg";
 import AuthLayout, { PasswordInput } from "../components/Common/AuthLayout";
 import { clearError, registerUser, resetOtpState, verifyOtp } from "../redux/slices/authSlice";
 import api from "../utils/api";
-import usePageTitle from "../hooks/usePageTitle";
+import useSeo from "../hooks/useSeo";
 
 const RESEND_SECONDS = 30;
 
 const Register = () => {
-  usePageTitle("Create account");
+  useSeo({ title: "Create account", noindex: true });
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const [name, setName] = useState("");

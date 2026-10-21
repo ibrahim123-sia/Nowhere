@@ -3,10 +3,10 @@ import { useSelector } from "react-redux";
 import { FiHeart } from "react-icons/fi";
 import ProductGrid from "../components/Product/ProductGrid";
 import { EmptyState } from "../components/Common/Feedback";
-import usePageTitle from "../hooks/usePageTitle";
+import useSeo from "../hooks/useSeo";
 
 const WishlistPage = () => {
-  usePageTitle("Wishlist");
+  useSeo({ title: "Wishlist", noindex: true });
   const items = useSelector((state) => state.wishlist.items);
 
   return (

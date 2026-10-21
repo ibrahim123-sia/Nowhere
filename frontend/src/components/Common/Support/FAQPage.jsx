@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { FiChevronDown, FiSearch } from "react-icons/fi";
 import { openAgent } from "../../../redux/slices/agentSlice";
-import usePageTitle from "../../../hooks/usePageTitle";
+import useSeo from "../../../hooks/useSeo";
+import { faqJsonLd } from "../../../utils/seo";
 
 const faqs = [
   {
@@ -89,7 +90,11 @@ const faqs = [
 ];
 
 const FAQPage = () => {
-  usePageTitle("FAQs");
+  useSeo({
+    title: "FAQs",
+    description: "Answers about delivery times and costs, cash on delivery, order tracking, cancellations, returns, sizing and promo codes at Nowhere.",
+    jsonLd: faqJsonLd(faqs),
+  });
   const dispatch = useDispatch();
   const [searchTerm, setSearchTerm] = useState("");
   const term = searchTerm.trim().toLowerCase();

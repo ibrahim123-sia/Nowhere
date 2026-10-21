@@ -8,7 +8,7 @@ import { ErrorState, PageLoader } from "../components/Common/Feedback";
 import { formatPrice } from "../utils/formatPrice";
 import { formatDate, orderRef } from "../utils/order";
 import { imageUrl } from "../utils/product";
-import usePageTitle from "../hooks/usePageTitle";
+import useSeo from "../hooks/useSeo";
 
 const StatTile = ({ label, value, hint, to }) => {
   const body = (
@@ -26,7 +26,7 @@ const StatTile = ({ label, value, hint, to }) => {
 };
 
 const AdminHomePage = () => {
-  usePageTitle("Admin dashboard");
+  useSeo({ title: "Admin dashboard", noindex: true });
   const dispatch = useDispatch();
   const { stats, statsLoading, error } = useSelector((state) => state.adminOrders);
 

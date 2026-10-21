@@ -5,7 +5,7 @@ import { FiMinus, FiPlus } from "react-icons/fi";
 import { toast } from "sonner";
 import { removeFromCart, updateCartItemQuantity } from "../../redux/slices/cartSlice";
 import { formatPrice } from "../../utils/formatPrice";
-import { imageUrl } from "../../utils/product";
+import { imageUrl, productPath } from "../../utils/product";
 
 const CartContents = ({ cart, onNavigate, compact = false }) => {
   const dispatch = useDispatch();
@@ -31,7 +31,7 @@ const CartContents = ({ cart, onNavigate, compact = false }) => {
     <ul className="divide-y divide-stone-200">
       {cart.products.map((item) => (
         <li key={`${item.productId}-${item.size}-${item.color}`} className="flex gap-4 py-4 first:pt-0">
-          <Link to={`/product/${item.productId}`} onClick={onNavigate} className="flex-shrink-0">
+          <Link to={productPath({ _id: item.productId, name: item.name })} onClick={onNavigate} className="flex-shrink-0">
             <img
               src={imageUrl(item.image, 200)}
               alt={item.name}
@@ -41,7 +41,7 @@ const CartContents = ({ cart, onNavigate, compact = false }) => {
           <div className="flex min-w-0 flex-1 flex-col">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <Link to={`/product/${item.productId}`} onClick={onNavigate} className="line-clamp-2 text-sm font-medium hover:underline">
+                <Link to={productPath({ _id: item.productId, name: item.name })} onClick={onNavigate} className="line-clamp-2 text-sm font-medium hover:underline">
                   {item.name}
                 </Link>
                 <p className="mt-0.5 text-xs text-ink-muted">

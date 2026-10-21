@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import { FiAward, FiCreditCard, FiRefreshCw, FiMaximize2, FiTruck } from "react-icons/fi";
 import { HiSparkles } from "react-icons/hi2";
 import { openAgent } from "../../../redux/slices/agentSlice";
-import usePageTitle from "../../../hooks/usePageTitle";
+import useSeo from "../../../hooks/useSeo";
 
 const FEATURES = [
   { icon: HiSparkles, title: "An AI stylist in chat", text: "Iris finds products, compares fits, fills your bag, places COD orders after you confirm, and tracks or cancels them." },
@@ -16,7 +16,10 @@ const FEATURES = [
 ];
 
 const FeaturesPage = () => {
-  usePageTitle("Why shop with us");
+  useSeo({
+    title: "Why shop with us",
+    description: "Delivery across Pakistan, cash on delivery, 30-day returns, honest sizing and an AI stylist in chat: why customers shop at Nowhere.",
+  });
   const dispatch = useDispatch();
   return (
     <div className="container-page py-14">

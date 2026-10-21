@@ -8,7 +8,7 @@ import { clearCart } from "../../redux/slices/cartSlice";
 import { formatPrice } from "../../utils/formatPrice";
 import { imageUrl } from "../../utils/product";
 import { EmptyState } from "../Common/Feedback";
-import usePageTitle from "../../hooks/usePageTitle";
+import useSeo from "../../hooks/useSeo";
 
 const CITIES = ["Karachi", "Lahore", "Islamabad", "Rawalpindi", "Faisalabad", "Multan", "Peshawar", "Quetta", "Hyderabad", "Sialkot", "Gujranwala"];
 
@@ -20,7 +20,7 @@ const Field = ({ label, id, className = "", ...props }) => (
 );
 
 const Checkout = () => {
-  usePageTitle("Checkout");
+  useSeo({ title: "Checkout", noindex: true });
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { cart } = useSelector((state) => state.cart);

@@ -4,10 +4,10 @@ import { useSelector } from "react-redux";
 import { FiCheckCircle } from "react-icons/fi";
 import { OrderItems, OrderTimeline, OrderTotals, ShippingAddress } from "../components/Order/OrderParts";
 import { estimatedDelivery, orderRef } from "../utils/order";
-import usePageTitle from "../hooks/usePageTitle";
+import useSeo from "../hooks/useSeo";
 
 const OrderConfirmationPage = () => {
-  usePageTitle("Order confirmed");
+  useSeo({ title: "Order confirmed", noindex: true });
   const order = useSelector((state) => state.checkout.lastOrder);
   const { user } = useSelector((state) => state.auth);
   const { shipping } = useSelector((state) => state.store.config);

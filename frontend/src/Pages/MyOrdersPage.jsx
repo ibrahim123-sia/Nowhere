@@ -7,7 +7,7 @@ import { EmptyState, ErrorState } from "../components/Common/Feedback";
 import { formatPrice } from "../utils/formatPrice";
 import { formatDate, orderRef } from "../utils/order";
 import { imageUrl } from "../utils/product";
-import usePageTitle from "../hooks/usePageTitle";
+import useSeo from "../hooks/useSeo";
 
 // Order history list. Rendered on its own page and inside the profile.
 export const OrdersList = () => {
@@ -56,7 +56,7 @@ export const OrdersList = () => {
 };
 
 const MyOrdersPage = () => {
-  usePageTitle("My orders");
+  useSeo({ title: "My orders", noindex: true });
   return (
     <div className="container-page max-w-4xl py-10">
       <h1 className="heading-display mb-8 text-4xl">My orders</h1>

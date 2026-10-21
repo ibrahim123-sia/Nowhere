@@ -5,10 +5,10 @@ import { toast } from "sonner";
 import loginImage from "../assets/login.jpg";
 import AuthLayout, { PasswordInput } from "../components/Common/AuthLayout";
 import { clearError, forgotPassword, loginUser, resetPassword } from "../redux/slices/authSlice";
-import usePageTitle from "../hooks/usePageTitle";
+import useSeo from "../hooks/useSeo";
 
 const Login = () => {
-  usePageTitle("Sign in");
+  useSeo({ title: "Sign in", noindex: true });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [resetEmail, setResetEmail] = useState("");

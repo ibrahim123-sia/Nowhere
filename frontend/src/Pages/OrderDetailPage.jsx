@@ -9,7 +9,7 @@ import { OrderItems, OrderTimeline, OrderTotals, ShippingAddress, StatusBadge } 
 import { EmptyState, PageLoader } from "../components/Common/Feedback";
 import Modal from "../components/Common/Modal";
 import { formatDate, orderRef } from "../utils/order";
-import usePageTitle from "../hooks/usePageTitle";
+import useSeo from "../hooks/useSeo";
 
 const OrderDetailPage = () => {
   const { id } = useParams();
@@ -17,7 +17,7 @@ const OrderDetailPage = () => {
   const { orderDetails: order, loading, error } = useSelector((state) => state.orders);
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [busy, setBusy] = useState(false);
-  usePageTitle(order ? `Order ${orderRef(order)}` : "Order");
+  useSeo({ title: order ? `Order ${orderRef(order)}` : "Order", noindex: true });
 
   useEffect(() => {
     dispatch(fetchOrderDetails(id));

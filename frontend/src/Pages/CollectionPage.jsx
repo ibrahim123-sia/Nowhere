@@ -7,8 +7,9 @@ import SortOptions from "../components/Product/SortOptions";
 import ProductGrid from "../components/Product/ProductGrid";
 import { fetchProductsByFilters } from "../redux/slices/productSlice";
 import { formatPrice } from "../utils/formatPrice";
-import { FILTER_KEYS } from "../utils/product";
-import usePageTitle from "../hooks/usePageTitle";
+import { FILTER_KEYS, productPath } from "../utils/product";
+import { absoluteUrl, breadcrumbJsonLd, collectionPath } from "../utils/seo";
+import useSeo from "../hooks/useSeo";
 
 const PAGE_SIZE = 24;
 
@@ -27,6 +28,21 @@ const titleFor = (collection, params) => {
   return collection === "all" && parts.length ? parts.join(" · ") : base;
 };
 
+// Only gender and category define an indexable landing page; search and
+// narrower filters are kept out of the index to avoid near-duplicate pages.
+const INDEXABLE_PARAMS = ["gender", "category"];
+
+const seoFor = (collection, params, title, total) => {
+  const path = collectionPath(collection, Object.fromEntries(params));
+  const filtered = [...params.keys()].some((key) => !INDEXABLE_PARAMS.includes(key) && key !== "sortBy");
+  const label = title.replace(" · ", " ").toLowerCase();
+  return {
+    path,
+    noindex: filtered,
+    description: `Shop ${label} at Nowhere: ${total ? `${total} styles` : "modern essentials"} for men and women, made in Pakistan. Free delivery over Rs. 5,000, cash on delivery and 30-day returns.`,
+  };
+};
+
 const chipLabel = (key, value) => {
   if (key === "minPrice") return `From ${formatPrice(value)}`;
   if (key === "maxPrice") return `Up to ${formatPrice(value)}`;
@@ -43,7 +59,28 @@ const CollectionPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const title = titleFor(collection, searchParams);
-  usePageTitle(title);
+  const seo = seoFor(collection, searchParams, title, total);
+  const origin = window.location.origin;
+  useSeo({
+    title,
+    ...seo,
+    jsonLd: [
+      breadcrumbJsonLd(origin, [
+        { name: "Home", path: "/" },
+        { name: title, path: seo.path },
+      ]),
+      {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        itemListElement: products.slice(0, 24).map((product, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          url: absoluteUrl(origin, productPath(product)),
+          name: product.name,
+        })),
+      },
+    ],
+  });
   const queryKey = searchParams.toString();
 
   useEffect(() => {

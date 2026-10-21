@@ -6,12 +6,12 @@ import { addUser, deleteUser, fetchUsers, updateUser } from "../../redux/slices/
 import ConfirmDialog from "./ConfirmDialog";
 import { ErrorState } from "../Common/Feedback";
 import { formatDate } from "../../utils/order";
-import usePageTitle from "../../hooks/usePageTitle";
+import useSeo from "../../hooks/useSeo";
 
 const EMPTY_FORM = { name: "", email: "", password: "", role: "customer" };
 
 const UserManagement = () => {
-  usePageTitle("Customers");
+  useSeo({ title: "Customers", noindex: true });
   const dispatch = useDispatch();
   const { user: currentUser } = useSelector((state) => state.auth);
   const { users, loading, error } = useSelector((state) => state.admin);
