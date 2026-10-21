@@ -138,7 +138,7 @@ orderSchema.index({ guestId: 1, createdAt: -1 });
 
 // Short, human-friendly reference customers can quote, e.g. NW-K7Q2M9XA.
 orderSchema.statics.generateOrderNumber = function () {
-  return `NW-${crypto.randomBytes(5).toString("base64url").toUpperCase().replace(/[-_]/g, "X").slice(0, 8)}`;
+  return `NW-${crypto.randomBytes(6).toString("base64url").toUpperCase().replace(/[-_]/g, "X")}`;
 };
 
 orderSchema.pre("validate", function (next) {

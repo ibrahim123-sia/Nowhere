@@ -14,6 +14,9 @@ const PENDING_TTL_MS = 15 * 60 * 1000;
 
 const rs = (n) => `Rs. ${Math.round(Number(n) || 0).toLocaleString("en-US")}`;
 
+const shortDate = (date) =>
+  new Date(date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+
 // ---------- Shapers (keep tool results small for free-tier token limits) ----------
 
 function productCard(p) {
@@ -68,12 +71,12 @@ function orderView(order) {
     estimatedDelivery:
       order.status === "Delivered" || order.status === "Cancelled"
         ? undefined
-        : `${eta.from.toDateString()} - ${eta.to.toDateString()}`,
+        : `${shortDate(eta.from)} - ${shortDate(eta.to)}`,
     items: order.orderItems.map((i) => `${i.quantity} x ${i.name} (${i.size}, ${i.color})`),
     total: order.totalPrice,
     paymentMethod: order.paymentMethod,
     city: order.shippingAddress?.city,
-    timeline: (order.statusHistory || []).map((s) => `${s.status} on ${new Date(s.at).toDateString()}`),
+    timeline: (order.statusHistory || []).map((s) => `${s.status} on ${shortDate(s.at)}`),
     canCancel: order.status === "Processing",
   };
 }
