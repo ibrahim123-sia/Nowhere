@@ -11,17 +11,19 @@ React 18 + Vite single-page app for the Nowhere store: storefront, checkout, acc
 | `npm run preview` | Serve the production build locally |
 | `npm run lint` | ESLint |
 
-Copy `.env.example` to `.env` and set `VITE_BACKEND_URL` to the API origin.
+Copy `.env.example` to `.env` and set `VITE_BACKEND_URL` to the API origin. `SITE_URL` (optional) is the public storefront URL used for absolute links in previews, the sitemap and robots.txt.
 
 ## Layout
 
 ```
+api/            Vercel functions: /product/:slug previews, /sitemap.xml, /robots.txt
+public/         static files served as-is (og-image.jpg)
 src/
   components/   Layout, Product, Cart, Order, Agent, Admin, Common
   Pages/        route-level pages
   redux/        store and slices (auth, cart, products, checkout, orders, wishlist, store, agent, admin)
-  hooks/        usePageTitle
-  utils/        api.js (axios client), product, order and price helpers
+  hooks/        useSeo (title, meta, canonical, Open Graph, JSON-LD)
+  utils/        api.js (axios client), product, order, price and SEO helpers
   assets/       brand imagery
 ```
 

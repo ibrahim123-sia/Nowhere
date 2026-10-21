@@ -43,6 +43,7 @@ Its headline feature is **Iris**, an AI shopping agent built into every page. Ir
 | **Accounts** | JWT auth with email OTP verification, password reset, profile, saved address, password change, persistent wishlist |
 | **Admin** | Revenue, average order value, orders by status, 30-day sales chart, low-stock alerts; one product form for add/edit; order workflow; user management |
 | **Assistant** | Iris: streaming chat with product cards, order summaries with Confirm buttons and order-placed cards; server-enforced confirmation |
+| **SEO** | Readable product URLs, per-page titles, descriptions and canonical links, Open Graph and X cards, schema.org Product, Breadcrumb, FAQ and site search data, live sitemap and robots.txt, product previews rendered on the server |
 
 ## Meet Iris, the AI shopping assistant
 
@@ -186,6 +187,7 @@ Neither data script deletes users or orders.
 | `GROQ_MODEL` / `GEMINI_MODEL` | No | Override the default models |
 | `ADMIN_NAME` / `ADMIN_EMAIL` / `ADMIN_PASSWORD` | For `seed` | Admin account created on a fresh database |
 | `VITE_BACKEND_URL` | Yes (frontend) | API origin used by the storefront |
+| `SITE_URL` | No (frontend) | Public storefront URL for previews, sitemap and robots.txt; defaults to the Vercel production domain |
 
 The full list with comments is in [`backend/.env.example`](backend/.env.example).
 
@@ -196,7 +198,7 @@ Base path `/api`. "Guest or user" routes accept an optional JWT and otherwise id
 | Area | Endpoints | Access |
 | --- | --- | --- |
 | Auth | `POST /users/register`, `/verify-otp`, `/resend-otp`, `/login`, `/forgot-password`, `/reset-password` · `GET/PUT /users/profile` | Public · User |
-| Catalogue | `GET /products`, `/products/facets`, `/suggest`, `/best-sellers`, `/new-arrivals`, `/products/:id`, `/similar/:id` | Public |
+| Catalogue | `GET /products`, `/products/facets`, `/suggest`, `/best-sellers`, `/new-arrivals`, `/products/sitemap`, `/products/:id`, `/similar/:id` | Public |
 | Reviews | `GET /products/:id/reviews` · `POST /products/:id/reviews` | Public · User |
 | Cart | `GET/POST/PUT/DELETE /cart` · `POST /cart/merge`, `/cart/reorder` | Guest or user · User |
 | Checkout | `POST /checkout/quote` · `POST /checkout` | Guest or user |
@@ -207,20 +209,28 @@ Base path `/api`. "Guest or user" routes accept an optional JWT and otherwise id
 
 Request and response details are in the [project overview](docs/Nowhere-Project-Overview.pdf).
 
+## SEO
+
+The storefront is a single-page app, so search engines and link previews get help in three layers:
+
+- **In the app:** the `useSeo` hook sets each page's title, description, canonical URL, robots rule, Open Graph and X tags, and schema.org JSON-LD: `Product` with price, stock, shipping, returns and rating; `BreadcrumbList`; `FAQPage`; `ItemList` for collections; and `Organization` with a site search box on the home page. Checkout, account, admin, search results and filtered listings are `noindex`.
+- **Readable URLs:** products live at `/product/<name>-<id>`. Old `/product/<id>` links and renamed products redirect permanently to the current URL.
+- **On the server:** Vercel functions in `frontend/api/` serve product pages with their meta tags and structured data already in the HTML, which is what WhatsApp, Facebook and X read. They also build `/sitemap.xml` (pages, collections and every published product with its image) from the live catalogue, and `/robots.txt`.
+
 ## Testing
 
 ```bash
 npm test
 ```
 
-The suite starts the real Express app against an in-memory MongoDB and a mock OpenAI-compatible LLM that streams scripted tool calls. Its 86 checks cover search and filters, cart validation, guest and customer checkout, coupons, stock reservation and release, order privacy, the OTP flow, admin rules, reviews, the contact form, and the assistant: streaming, product and confirmation cards, the server-side confirmation gate, the Confirm button path, session privacy and provider errors. CI runs the suite, the linter and a production build on every push.
+The suite starts the real Express app against an in-memory MongoDB and a mock OpenAI-compatible LLM that streams scripted tool calls. Its 87 checks cover search and filters, cart validation, guest and customer checkout, coupons, stock reservation and release, order privacy, the OTP flow, admin rules, reviews, the contact form, and the assistant: streaming, product and confirmation cards, the server-side confirmation gate, the Confirm button path, session privacy and provider errors. CI runs the suite, the linter and a production build on every push.
 
 ## Deployment
 
-Both apps include a `vercel.json`. Deploy `backend/` as a Node project and `frontend/` as a static Vite project, then:
+Both apps include a `vercel.json`. Deploy `backend/` as a Node project and `frontend/` as a Vite project (its `api/` folder deploys as serverless functions), then:
 
 1. Set the backend environment variables, including `CLIENT_URL` (the storefront origin) and at least one AI key.
-2. Set `VITE_BACKEND_URL` on the frontend to the API origin.
+2. Set `VITE_BACKEND_URL` on the frontend to the API origin, and `SITE_URL` if you use a custom domain.
 3. On an existing database, run `npm run enhance` once to upgrade the catalogue; on a new one, run `npm run seed`.
 4. Sign in as the admin and change the default password.
 
@@ -241,12 +251,14 @@ Nowhere/
 │   ├── tests/           end-to-end API and assistant tests
 │   └── utils/           mailer, errors, text helpers
 ├── frontend/
+│   ├── api/             Vercel functions: product previews, sitemap.xml, robots.txt
+│   ├── public/          static files (share image)
 │   └── src/
 │       ├── components/  Layout, Product, Cart, Order, Agent, Admin, Common
 │       ├── Pages/       route-level pages
 │       ├── redux/       store and slices
-│       ├── hooks/
-│       └── utils/       API client, pricing and order helpers
+│       ├── hooks/       useSeo
+│       └── utils/       API client, pricing, order and SEO helpers
 ├── docs/                project overview and developer guide (PDF), screenshots
 ├── LICENSE
 └── package.json         root scripts for both apps
