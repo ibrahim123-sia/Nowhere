@@ -247,7 +247,7 @@ Nowhere/
 │       ├── redux/       store and slices
 │       ├── hooks/
 │       └── utils/       API client, pricing and order helpers
-├── docs/                project overview and learning guide (PDF), screenshots
+├── docs/                project overview and developer guide (PDF), screenshots
 ├── LICENSE
 └── package.json         root scripts for both apps
 ```
@@ -272,7 +272,7 @@ Nowhere/
 | Document | Contents |
 | --- | --- |
 | [Project overview (PDF)](docs/Nowhere-Project-Overview.pdf) | Product summary, screens, architecture, data model, API reference, audit findings, competitive comparison, deployment |
-| [Learning guide (PDF)](docs/Nowhere-Learning-Guide.pdf) | How the code works end to end, with a deep dive into how the AI agent is built, kept safe and extended |
+| [Developer guide (PDF)](docs/Nowhere-Developer-Guide.pdf) | How the code works end to end, with a deep dive into how the AI agent is built, kept safe and extended |
 
 ## Author
 
