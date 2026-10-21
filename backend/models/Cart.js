@@ -15,6 +15,7 @@ const cartItemSchema = new mongoose.Schema(
     quantity: {
       type: Number,
       default: 1,
+      min: 1,
     },
   },
   { _id: false }
@@ -25,9 +26,11 @@ const cartSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      index: true,
     },
     guestId: {
       type: String,
+      index: true,
     },
     products: [cartItemSchema],
     totalPrice: {
@@ -39,4 +42,4 @@ const cartSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports=mongoose.model("Cart",cartSchema)
+module.exports = mongoose.model("Cart", cartSchema);

@@ -1,130 +1,62 @@
-const express=require("express")
-const Checkout=require("../models/Checkout");
-const Cart=require("../models/Cart");
-const mongoose = require("mongoose");
-const Product=require("../models/Product");
-const Order=require("../models/Order");
-const {protect}=require("../middleware/authMiddleware");
+const express = require("express");
+const rateLimit = require("express-rate-limit");
+const { optionalAuth } = require("../middleware/authMiddleware");
+const cartService = require("../services/cartService");
+const orderService = require("../services/orderService");
+const { sendOrderConfirmation } = require("../utils/mailer");
 
-const router=express.Router();
+const router = express.Router();
+
+const placeOrderLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  limit: 10,
+  message: { message: "Too many orders from this device, please try again shortly" },
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+});
+
+//@route POST /api/checkout/quote
+//@desc price the current cart (subtotal, shipping, promo code, total)
+//@access public (guest or logged in)
+router.post("/quote", optionalAuth, async (req, res, next) => {
+  try {
+    const owner = cartService.resolveOwner(req.user, req.body.guestId);
+    const cart = await cartService.getCart(owner);
+    const totals = await orderService.quote(cart, {
+      couponCode: req.body.couponCode,
+      email: req.user ? req.user.email : req.body.email,
+    });
+    res.json({ cart: cartService.summarize(cart), ...totals });
+  } catch (error) {
+    next(error);
+  }
+});
 
 //@route POST /api/checkout
-//@desc create a new checkout session
-//@acess private
+//@desc place a cash-on-delivery order from the current cart
+//@access public (guest checkout supported)
+router.post("/", placeOrderLimiter, optionalAuth, async (req, res, next) => {
+  try {
+    const { guestId, email, shippingAddress, paymentMethod, couponCode } = req.body;
+    const owner = cartService.resolveOwner(req.user, guestId);
 
-router.post("/",protect,async(req,res)=>{
-    const {checkoutItems,shippingAddress,paymentMethod,totalPrice}=req.body;
+    const order = await orderService.placeOrder({
+      owner,
+      user: req.user,
+      email,
+      shippingAddress,
+      paymentMethod,
+      couponCode,
+      source: "web",
+    });
 
-        if(!checkoutItems || checkoutItems.length===0){
-            return res.status(400).json({message:"no item in checkout"})
-        }
-    try{
+    sendOrderConfirmation(order).catch((err) =>
+      console.error("Order email failed:", err.message)
+    );
+    res.status(201).json(order);
+  } catch (error) {
+    next(error);
+  }
+});
 
-        //create a new checkout session
-        const newCheckout=await  Checkout.create({
-            user:req.user._id,
-            checkoutItems:checkoutItems,
-            shippingAddress,
-            paymentMethod,
-            totalPrice,
-            paymentStatus:"Pending",
-            isPaid:false,
-        })
-        
-        res.status(201).json(newCheckout)
-
-    }
-    catch(error){
-        console.error(error);
-        res.status(500).json({message:"server error"})
-
-    }
-})
-
-//@route PUT /api/checkout/:id/pay
-//@desc update checkout to mark as paid after successfull payment
-//@acess private
-router.put("/:id/pay",protect,async(req,res)=>{
-    const {paymentStatus,paymentDetails}=req.body;
-
-    try{
-        const checkout=await Checkout.findById(req.params.id);
-
-        if(!checkout){
-            return res.status(404).json({message:"Checkout not found"})
-        }
-
-        if(paymentStatus==="paid"){
-            checkout.isPaid=true;
-            checkout.paymentStatus=paymentStatus,
-            checkout.paymentDetails=paymentDetails,
-            checkout.paidAt=Date.now();
-            await checkout.save();
-            res.status(200).json(checkout)
-        }
-        else{
-            res.status(400).json({message:"Invalid Payment Status"})
-        }
-
-    }
-    catch(error){
-        console.error(error)
-        res.status(500).json({message:"Server error"})
-    }
-})
-
-//@route POST /api/checkout/:id/finalized
-//@desc Finalize checkout and convert to an order  after payment confirmation
-//@acess private
-
-router.post("/:id/finalize",protect,async(req,res)=>{
-
-    try{
-
-       
-const checkout = await Checkout.findById(req.params.id);
-
-       
-        if(!checkout){
-            return res.status(404).json({message:"checkout not found"})
-        }
-
-        if(checkout.isPaid && !checkout.isFinalized){
-            //create final order base on checkout details
-
-            const finalOrder=await Order.create({
-                user:checkout.user,
-                orderItems:checkout.checkoutItems,
-                shippingAddress:checkout.shippingAddress,
-                paymentMethod:checkout.paymentMethod,
-                totalPrice:checkout.totalPrice,
-                isPaid:true,
-                paidAt:checkout.paidAt,
-                isDelivered:false,
-                paymentStatus:"Paid",
-                paymentDetails:checkout.paymentDetails,
-
-            });
-
-            //mark checkout as finalize
-            checkout.isFinalized=true,
-            checkout.finalizedAt=Date.now();
-            await checkout.save();
-            //Delete the cart associate with the user
-            await Cart.findOneAndDelete({user:checkout.user});
-            res.status(201).json(finalOrder);
-        }
-        else if(checkout.isFinalized){
-            res.status(400).json({message:"Checkout already Finalized"})
-        }
-        else{
-            res.status(400).json({message:"Checkout is not paid"})
-        }
-
-    }catch(error){
-        console.error(error)
-        res.status(500).json({message:"Server error"})
-    }
-})
-
-module.exports=router;
+module.exports = router;

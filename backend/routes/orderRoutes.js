@@ -1,53 +1,67 @@
-const express=require("express")
-const Order=require("../models/Order")
-const {protect}=require("../middleware/authMiddleware")
+const express = require("express");
+const rateLimit = require("express-rate-limit");
+const { protect } = require("../middleware/authMiddleware");
+const orderService = require("../services/orderService");
 
-const router=express.Router();
+const router = express.Router();
+
+const trackLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 30,
+  message: { message: "Too many lookups, please try again later" },
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+});
 
 //@route GET /api/orders/my-orders
-//@desc get logged-in user order
+//@desc get logged-in user orders, newest first
 //@access private
+router.get("/my-orders", protect, async (req, res, next) => {
+  try {
+    res.json(await orderService.listUserOrders(req.user));
+  } catch (error) {
+    next(error);
+  }
+});
 
-router.get("/my-orders",protect,async(req,res)=>{
-
-    try{
-        //find the order for the authenticated user
-        const orders=await Order.find({user:req.user._id}).sort({
-            createdAt:-1,
-        }); //sort by most recent order
-        res.json(orders)
-    }
-    catch(error){
-        console.error(error);
-        res.status(500).json({message:"Server error"})
-
-    }
+//@route POST /api/orders/track
+//@desc look up an order by order number + email (works for guests)
+//@access public
+router.post("/track", trackLimiter, async (req, res, next) => {
+  try {
+    const order = await orderService.trackOrder(req.body.orderNumber, req.body.email);
+    const { guestId, user, ...rest } = order.toObject();
+    res.json(rest);
+  } catch (error) {
+    next(error);
+  }
 });
 
 //@route GET /api/orders/:id
-//@desc get order details by id
+//@desc get order details by id (owner or admin only)
 //@access private
+router.get("/:id", protect, async (req, res, next) => {
+  try {
+    const order = await orderService.getOrderForUser(req.params.id, req.user);
+    res.json(await order.populate("user", "name email"));
+  } catch (error) {
+    next(error);
+  }
+});
 
-router.get("/:id",protect,async(req,res)=>{
+//@route PUT /api/orders/:id/cancel
+//@desc cancel an order that hasn't shipped yet
+//@access private
+router.put("/:id/cancel", protect, async (req, res, next) => {
+  try {
+    const order = await orderService.getOrderForUser(req.params.id, req.user);
+    const updated = await orderService.cancelOrder(order, {
+      reason: req.body.reason ? String(req.body.reason).slice(0, 200) : "Cancelled by customer",
+    });
+    res.json(updated);
+  } catch (error) {
+    next(error);
+  }
+});
 
-    try{
-        const order=await Order.findById(req.params.id).populate(
-            "user",
-            "name email"
-        );
-
-        if(!order){
-            return res.status(404).json({message:"Order not found"})
-        }
-
-        //return the order detail
-        res.json(order)
-
-    }catch(error){
-        console.error(error);
-         res.status(500).json({message:"Server error"})
-        
-    }
-})
-
-module.exports=router;
+module.exports = router;

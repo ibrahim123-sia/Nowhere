@@ -1,43 +1,51 @@
 const express = require("express");
-const router = express.Router();
+const rateLimit = require("express-rate-limit");
 const Subscriber = require("../models/Subscriber");
+const { normalizeEmail, isValidEmail } = require("../utils/text");
+
+const router = express.Router();
+
+const WELCOME_CODE = "WELCOME10";
+
+const subscribeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  message: { message: "Too many requests, please try again later" },
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+});
 
 //@route POST /api/subscribe
-//@desc Handle newsletter subscription
+//@desc Handle newsletter subscription and hand out the welcome code
 //@access Public
-router.post("/subscribe", async (req, res) => {
-  const { email } = req.body;
+router.post("/subscribe", subscribeLimiter, async (req, res, next) => {
+  const email = normalizeEmail(req.body.email);
 
   if (!email) {
     return res.status(400).json({ message: "Email is required" });
   }
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ message: "Please enter a valid email address" });
+  }
 
   try {
-    // Normalize email by trimming and converting to lowercase
-    const normalizedEmail = email.trim().toLowerCase();
-    
-    // Check if the email is already subscribed
-    const existingSubscriber = await Subscriber.findOne({ email: normalizedEmail });
-
+    const existingSubscriber = await Subscriber.findOne({ email });
     if (existingSubscriber) {
-      return res.status(409).json({ 
+      return res.status(409).json({
         message: "This email is already subscribed",
-        alreadySubscribed: true 
+        alreadySubscribed: true,
+        couponCode: WELCOME_CODE,
       });
     }
 
-    // Create new subscriber
-    const subscriber = new Subscriber({ email: normalizedEmail });
-    await subscriber.save();
-    
-    res.status(201).json({ 
+    await Subscriber.create({ email });
+    res.status(201).json({
       message: "Thank you for subscribing!",
-      alreadySubscribed: false
+      alreadySubscribed: false,
+      couponCode: WELCOME_CODE,
     });
-
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    next(error);
   }
 });
 

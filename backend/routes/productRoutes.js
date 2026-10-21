@@ -1,342 +1,216 @@
 const express = require("express");
 const Product = require("../models/Product");
+const Review = require("../models/Review");
 const { protect, admin } = require("../middleware/authMiddleware");
+const { validateObjectId } = require("../middleware/errorMiddleware");
+const productService = require("../services/productService");
 
 const router = express.Router();
+
+const EDITABLE_FIELDS = [
+  "name", "description", "price", "discountPrice", "countInStock", "sku",
+  "category", "brand", "sizes", "colors", "collections", "material", "gender",
+  "fit", "season", "occasion", "highlights", "careInstructions", "origin",
+  "images", "isFeatured", "isPublished", "tags", "metaTitle", "metaDescription",
+  "metaKeywords", "dimensions", "weight",
+];
+
+const toList = (value) =>
+  Array.isArray(value)
+    ? value.map((v) => String(v).trim()).filter(Boolean)
+    : String(value || "").split(",").map((v) => v.trim()).filter(Boolean);
+
+// Picks the editable fields from the request body and normalises their types.
+function productInput(body) {
+  const data = {};
+  for (const field of EDITABLE_FIELDS) {
+    if (body[field] !== undefined) data[field] = body[field];
+  }
+  ["sizes", "colors", "occasion", "highlights", "careInstructions", "tags"].forEach((f) => {
+    if (data[f] !== undefined) data[f] = toList(data[f]);
+  });
+  ["price", "countInStock", "weight"].forEach((f) => {
+    if (data[f] !== undefined && data[f] !== "") data[f] = Number(data[f]);
+  });
+  if (data.discountPrice !== undefined) {
+    const discount = Number(data.discountPrice);
+    // An empty or zero discount clears it.
+    data.discountPrice = discount > 0 ? discount : undefined;
+  }
+  if (Array.isArray(data.images)) {
+    data.images = data.images
+      .filter((img) => img && img.url)
+      .map((img) => ({ url: String(img.url), altText: String(img.altText || "") }));
+  }
+  return data;
+}
+
+function validateProduct(data) {
+  if (data.price !== undefined && !(data.price >= 0)) return "Price must be a positive number";
+  if (data.countInStock !== undefined && !(Number.isInteger(data.countInStock) && data.countInStock >= 0)) {
+    return "Stock must be a whole number of 0 or more";
+  }
+  const price = data.price;
+  if (data.discountPrice !== undefined && price !== undefined && data.discountPrice >= price) {
+    return "Discount price must be lower than the regular price";
+  }
+  return null;
+}
 
 //@route Post /api/products
 //@desc create a new product
 //@access private/admin
-
-router.post("/", protect, admin, async (req, res) => {
+router.post("/", protect, admin, async (req, res, next) => {
   try {
-    const {
-      name,
-      description,
-      price,
-      discountPrice,
-      countInStock,
-      category,
-      brand,
-      sizes,
-      colors,
-      collections,
-      material,
-      gender,
-      images,
-      isFeatured,
-      isPublished,
-      tags,
-      dimensions,
-      weight,
-      sku,
-    } = req.body;
+    const data = productInput(req.body);
+    const invalid = validateProduct(data);
+    if (invalid) return res.status(400).json({ message: invalid });
 
-    const product = new Product({
-      name,
-      description,
-      price,
-      discountPrice,
-      countInStock,
-      category,
-      brand,
-      sizes,
-      colors,
-      collections,
-      material,
-      gender,
-      images,
-      isFeatured,
-      isPublished,
-      tags,
-      dimensions,
-      weight,
-      sku,
-      user: req.user._id, //reference to the admin user who create it
-    });
-
-    const createdProduct = await product.save();
-    res.status(201).json(createdProduct);
+    const product = await Product.create({ ...data, user: req.user._id });
+    res.status(201).json(product);
   } catch (error) {
-    console.error(error);
-    res.status(500).send("server error");
+    next(error);
   }
 });
 
 //@route PUT /api/products/:id
-//@desc update exiting product
+//@desc update existing product
 //@access private/admin
-
-router.put("/:id", protect, admin, async (req, res) => {
+router.put("/:id", protect, admin, validateObjectId(), async (req, res, next) => {
   try {
-    const {
-      name,
-      description,
-      price,
-      discountPrice,
-      countInStock,
-      category,
-      brand,
-      sizes,
-      colors,
-      collections,
-      material,
-      gender,
-      images,
-      isFeatured,
-      isPublished,
-      tags,
-      dimensions,
-      weight,
-      sku,
-    } = req.body;
-
-    //find the product
-
     const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: "Product Not Found" });
 
-    if (product) {
-      //update product field
-      product.name = name || product.name;
-      product.description = description || product.description;
-      product.price = price !== undefined ? price : product.price;
-      product.discountPrice =
-        discountPrice !== undefined ? discountPrice : product.discountPrice;
-      product.countInStock =
-        countInStock !== undefined ? countInStock : product.countInStock;
-      product.category = category || product.category;
-      product.brand = brand || product.brand;
-      product.sizes = sizes || product.sizes;
-      product.colors = colors || product.colors;
-      product.collections = collections || product.collections;
-      product.material = material || product.material;
-      product.gender = gender || product.gender;
-      product.images = images || product.images;
-      product.isFeatured =
-        isFeatured !== undefined ? isFeatured : product.isFeatured;
-      product.isPublished =
-        isPublished !== undefined ? isPublished : product.isPublished;
-      product.tags = tags || product.tags;
-      product.dimensions = dimensions || product.dimensions;
-      product.weight = weight !== undefined ? weight : product.weight;
-      product.sku = sku || product.sku;
+    const data = productInput(req.body);
+    const invalid = validateProduct({ price: product.price, ...data });
+    if (invalid) return res.status(400).json({ message: invalid });
 
-      //save to the DB
-
-      const updatedProduct = await product.save();
-      res.json(updatedProduct);
-    } else {
-      res.status(404).json({ message: " Product Not Found" });
-    }
+    // A cleared discount arrives as undefined, which unsets the field.
+    Object.assign(product, data);
+    res.json(await product.save());
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Server Error");
+    next(error);
   }
 });
 
 //@route DELETE /api/products/:id
-//@desc product by id
+//@desc delete product by id
 //@access private/admin
-
-router.delete("/:id", protect, admin, async (req, res) => {
+router.delete("/:id", protect, admin, validateObjectId(), async (req, res, next) => {
   try {
     const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: "Product Not Found" });
 
-    if (product) {
-      //remove from db
-      await product.deleteOne();
-      res.json({ message: " Product Removed" });
-    } else {
-      res.status(404).json({ message: " Product Not Found" });
-    }
+    await product.deleteOne();
+    await Review.deleteMany({ product: product._id });
+    res.json({ message: "Product Removed" });
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Server Error");
+    next(error);
   }
 });
 
 //@route GET /api/products
-//@desc get all the product with optimal query filter
+//@desc search the catalogue with optional filters, sorting and pagination
 //@access public
-
-router.get("/", async (req, res) => {
+router.get("/", async (req, res, next) => {
   try {
-    const {
-      collection,
-      size,
-      color,
-      gender,
-      minPrice,
-      maxPrice,
-      sortBy,
-      search,
-      category,
-      material,
-      brand,
-      limit,
-    } = req.query;
-
-    let query = {};
-
-    //filter logic
-    if (collection && collection.toLocaleLowerCase() !== "all") {
-      query.collections = collection;
-    }
-
-    if (category && category.toLocaleLowerCase() !== "all") {
-      query.category = category;
-    }
-
-    if (material) {
-      query.material = { $in: material.split(",") };
-    }
-
-    if (brand) {
-      query.brand = { $in: brand.split(",") };
-    }
-
-    if (size) {
-      query.sizes = { $in: size.split(",") };
-    }
-
-    if (color) {
-      query.colors = { $in: [color] };
-    }
-
-    if (gender) {
-      query.gender = gender;
-    }
-    if (minPrice || maxPrice) {
-      query.price = {};
-      if (minPrice) query.price.$gte = Number(minPrice);
-      if (maxPrice) query.price.$lte = Number(maxPrice);
-    }
-
-    if (search) {
-      query.$or = [
-        {
-          name: { $regex: search, $options: "i" },
-        },
-        {
-          description: { $regex: search, $options: "i" },
-        },
-      ];
-    }
-
-    //sort logic
-    let sort = {};
-    if (sortBy) {
-      switch (sortBy) {
-        case "priceAsc":
-          sort = { price: 1 };
-          break;
-        case "priceDesc":
-          sort = { price: -1 };
-          break;
-        case "popularity":
-          sort = { rating: -1 };
-          break;
-        default:
-          break;
-      }
-    }
-
-    let product = await Product.find(query)
-      .sort(sort)
-      .limit(Number(limit || 0));
-    res.json(product);
+    res.json(await productService.searchProducts(req.query));
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Server error");
+    next(error);
   }
 });
 
-
-//@route GET /api/products/best-seller
-//@desc Retrive best seller product base on highest rating
+//@route GET /api/products/facets
+//@desc available filter values (sizes, colours, brands, price range...)
 //@access public
-
-
-router.get("/best-seller",async(req,res)=>{
-  try{
-    const bestSeller=await Product.findOne().sort({rating: -1});
-
-    if(bestSeller){
-      res.json(bestSeller)
-    }
-    else{
-      res.status(404).json({message: "No best-seller found"})
-    }
+router.get("/facets", async (req, res, next) => {
+  try {
+    res.json(await productService.getFacets());
+  } catch (error) {
+    next(error);
   }
-  catch(error){
-    console.error(error);
-    res.status(500).send("Server Error")
+});
+
+//@route GET /api/products/suggest?q=
+//@desc quick search suggestions for the search bar
+//@access public
+router.get("/suggest", async (req, res, next) => {
+  try {
+    res.json(await productService.suggestProducts(req.query.q));
+  } catch (error) {
+    next(error);
   }
-})
+});
+
+//@route GET /api/products/best-sellers
+//@desc top rated products
+//@access public
+router.get("/best-sellers", async (req, res, next) => {
+  try {
+    res.json(await productService.getBestSellers(req.query.limit));
+  } catch (error) {
+    next(error);
+  }
+});
 
 //@route GET /api/products/new-arrivals
-//@desc Retrive latest 8 product creation date
+//@desc latest products by creation date
 //@access public
-
-router.get("/new-arrivals",async(req,res)=>{
-  try{
-    const newArrivals=await Product.find().sort({createdAt:-1}).limit(8);
-    res.json(newArrivals)
+router.get("/new-arrivals", async (req, res, next) => {
+  try {
+    res.json(await productService.getNewArrivals(req.query.limit));
+  } catch (error) {
+    next(error);
   }
-  catch(error){
-console.error(error)
-res.status(500).send("Server Error")
-  }
-})
-
+});
 
 //@route GET /api/products/similar/:id
-//@desc Retrive similar product based on current product gender and category
+//@desc products with the same gender and category
 //@access public
-
-router.get("/similar/:id",async(req,res)=>{
-  const {id}=req.params;
-
-  try{
-    const product=await Product.findById(id)
-
-    if(!product){
-      return res.status(404).json({message: "Product not found"})
-    }
-
-    const similarProducts=await Product.find({
-      _id:{$ne:id}, //exclude the current product id
-      gender:product.gender,
-      category:product.category,
-    }).limit(4);
-
-    res.json(similarProducts)
+router.get("/similar/:id", validateObjectId(), async (req, res, next) => {
+  try {
+    res.json(await productService.getSimilarProducts(req.params.id, req.query.limit));
+  } catch (error) {
+    next(error);
   }
-  catch(error){
-    console.error(error);
-    res.status(500).json("Server error")
+});
+
+//@route GET /api/products/:id/reviews
+//@desc reviews for a product with rating summary
+//@access public
+router.get("/:id/reviews", validateObjectId(), async (req, res, next) => {
+  try {
+    const [summary, list] = await Promise.all([
+      productService.getReviewSummary(req.params.id),
+      productService.listReviews(req.params.id, req.query),
+    ]);
+    res.json({ summary, ...list });
+  } catch (error) {
+    next(error);
   }
-})
+});
+
+//@route POST /api/products/:id/reviews
+//@desc add a review (one per customer)
+//@access private
+router.post("/:id/reviews", protect, validateObjectId(), async (req, res, next) => {
+  try {
+    const review = await productService.addReview(req.params.id, req.user, req.body);
+    res.status(201).json(review);
+  } catch (error) {
+    next(error);
+  }
+});
 
 //@route GET /api/products/:id
 //@desc get a single product
 //@access public
-
-router.get("/:id", async (req, res) => {
+router.get("/:id", validateObjectId(), async (req, res, next) => {
   try {
-    const product = await Product.findById(req.params.id);
-    if (product) {
-      res.json(product);
-    } else {
-      res.status(404).json({ message: "Product not found" });
-    }
+    res.json(await productService.getProduct(req.params.id));
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Server error");
+    next(error);
   }
 });
-
-
-
 
 module.exports = router;
