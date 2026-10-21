@@ -29,6 +29,10 @@ export default [
       ...react.configs['jsx-runtime'].rules,
       ...reactHooks.configs.recommended.rules,
       'react/jsx-no-target-blank': 'off',
+      // The project doesn't use PropTypes, and files keep the explicit React import.
+      'react/prop-types': 'off',
+      'react/no-unescaped-entities': 'off',
+      'no-unused-vars': ['error', { varsIgnorePattern: '^React$', ignoreRestSiblings: true }],
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },

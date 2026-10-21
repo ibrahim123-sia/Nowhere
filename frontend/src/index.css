@@ -2,8 +2,95 @@
 @tailwind components;
 @tailwind utilities;
 
-#root{
- font-family: "Inter",sans-serif;
- font-optical-sizing: auto;
- font-style: normal; 
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-white font-sans text-ink;
+    font-optical-sizing: auto;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-ink ring-offset-2;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-page px-4 sm:px-6 lg:px-8;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold tracking-wide transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply btn bg-ink text-white hover:bg-ink-soft active:scale-[0.99];
+  }
+
+  .btn-outline {
+    @apply btn border border-ink/15 bg-white text-ink hover:border-ink;
+  }
+
+  .btn-light {
+    @apply btn bg-white text-ink hover:bg-stone-100;
+  }
+
+  .btn-ghost {
+    @apply btn px-3 text-ink-soft hover:bg-stone-100 hover:text-ink;
+  }
+
+  .btn-danger {
+    @apply btn bg-sale text-white hover:bg-red-800;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-ink placeholder:text-stone-400 transition focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink disabled:bg-stone-100 disabled:text-ink-muted;
+  }
+
+  .label {
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-wider text-ink-soft;
+  }
+
+  .card {
+    @apply rounded-2xl border border-stone-200 bg-white;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.2em] text-ink-muted;
+  }
+
+  .heading-display {
+    @apply font-display font-medium tracking-tight text-ink;
+  }
+
+  .link-underline {
+    @apply underline decoration-ink/30 underline-offset-4 transition hover:decoration-ink;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-ink-soft transition hover:border-ink hover:text-ink;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide;
+  }
+
+  .skeleton {
+    @apply relative overflow-hidden rounded-xl bg-stone-200/70 before:absolute before:inset-0 before:-translate-x-full before:animate-shimmer before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }

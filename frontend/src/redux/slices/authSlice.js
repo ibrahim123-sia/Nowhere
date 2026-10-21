@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import api, { errorPayload } from "../../utils/api";
 
 const getUserFromStorage = () => {
   try {
@@ -11,115 +11,123 @@ const getUserFromStorage = () => {
   }
 };
 
-const userFromStorage = getUserFromStorage();
+const newGuestId = () =>
+  `guest_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 
-const initialGuestId =
-  localStorage.getItem("guestId") || `guest_${new Date().getTime()}`;
+const storedGuestId = localStorage.getItem("guestId");
+const initialGuestId = /^guest_[A-Za-z0-9_-]{4,60}$/.test(storedGuestId || "")
+  ? storedGuestId
+  : newGuestId();
 localStorage.setItem("guestId", initialGuestId);
 
+const saveSession = ({ user, token }) => {
+  if (token) localStorage.setItem("userToken", token);
+  if (user) localStorage.setItem("userInfo", JSON.stringify(user));
+};
+
+// Moves the guest cart into the account right after signing in, before the
+// user is set in state (which triggers the cart refresh).
+const mergeGuestCart = (guestId) => api.post("/cart/merge", { guestId }).catch(() => null);
+
 const initialState = {
-  user: userFromStorage,
+  user: getUserFromStorage(),
   guestId: initialGuestId,
   loading: false,
   error: null,
-  otpSent: false
+  otpSent: false,
 };
 
 // Login User
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
-  async (userData, { rejectWithValue }) => {
+  async (userData, { getState, rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/users/login`,
-        userData
-      );
-      localStorage.setItem("userInfo", JSON.stringify(response.data.user));
-      localStorage.setItem("userToken", response.data.token);
-      return response.data.user;
+      const { data } = await api.post("/users/login", userData);
+      saveSession(data);
+      await mergeGuestCart(getState().auth.guestId);
+      return data.user;
     } catch (error) {
-      return rejectWithValue(error.response?.data);
+      return rejectWithValue({
+        ...errorPayload(error, "Login failed"),
+        needsVerification: error.response?.data?.needsVerification,
+      });
     }
   }
 );
 
-// Register user (Send OTP)
+// Register user (sends OTP)
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/users/register`,
-        userData
-      );
-      return response.data;
+      const { data } = await api.post("/users/register", userData);
+      return data;
     } catch (error) {
-      return rejectWithValue(error.response?.data);
+      return rejectWithValue(errorPayload(error, "Registration failed"));
     }
   }
 );
 
-// Verify OTP
-// Verify OTP
+// Verify OTP, then the account is active and logged in
 export const verifyOtp = createAsyncThunk(
   "auth/verifyOtp",
-  async (data, { rejectWithValue }) => {
+  async (payload, { getState, rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/users/verify-otp`,
-        data
-      );
-      
-      // ✅ FIX: Store token and user info
-      if (response.data.token) {
-        localStorage.setItem("userToken", response.data.token);
-      }
-      if (response.data.user) {
-        localStorage.setItem("userInfo", JSON.stringify(response.data.user));
-      }
-      
-      return response.data.user;
+      const { data } = await api.post("/users/verify-otp", payload);
+      saveSession(data);
+      await mergeGuestCart(getState().auth.guestId);
+      return data.user;
     } catch (error) {
-      return rejectWithValue(error.response?.data || { message: "Verification failed" });
+      return rejectWithValue(errorPayload(error, "Verification failed"));
     }
   }
 );
-
-
 
 export const forgotPassword = createAsyncThunk(
   "auth/forgotPassword",
   async (email, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/users/forgot-password`,
-        { email }
-      );
-      return response.data;
+      const { data } = await api.post("/users/forgot-password", { email });
+      return data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || { message: "Failed to send OTP" });
+      return rejectWithValue(errorPayload(error, "Failed to send OTP"));
     }
   }
 );
-
 
 export const resetPassword = createAsyncThunk(
   "auth/resetPassword",
   async ({ email, otp, newPassword }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/users/reset-password`,
-        { email, otp, newPassword }
-      );
-      return response.data;
+      const { data } = await api.post("/users/reset-password", { email, otp, newPassword });
+      return data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || { message: "Password reset failed" });
+      return rejectWithValue(errorPayload(error, "Password reset failed"));
     }
   }
 );
 
+export const updateProfile = createAsyncThunk(
+  "auth/updateProfile",
+  async (updates, { rejectWithValue }) => {
+    try {
+      const { data } = await api.put("/users/profile", updates);
+      saveSession(data);
+      return data.user;
+    } catch (error) {
+      return rejectWithValue(errorPayload(error, "Could not update profile"));
+    }
+  }
+);
 
-
+const pending = (state) => {
+  state.loading = true;
+  state.error = null;
+};
+const rejected = (state, action) => {
+  state.loading = false;
+  state.error = action.payload?.message || "Something went wrong";
+};
 
 const authSlice = createSlice({
   name: "auth",
@@ -127,7 +135,7 @@ const authSlice = createSlice({
   reducers: {
     logout: (state) => {
       state.user = null;
-      state.guestId = `guest_${new Date().getTime()}`;
+      state.guestId = newGuestId();
       localStorage.removeItem("userInfo");
       localStorage.removeItem("userToken");
       localStorage.setItem("guestId", state.guestId);
@@ -138,81 +146,51 @@ const authSlice = createSlice({
     },
     clearError: (state) => {
       state.error = null;
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
-      // Login reducers
-      .addCase(loginUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(loginUser.pending, pending)
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload;
       })
-      .addCase(loginUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload?.message || "Login failed";
-      })
+      .addCase(loginUser.rejected, rejected)
 
-      // Register reducers
-      .addCase(registerUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(registerUser.pending, pending)
       .addCase(registerUser.fulfilled, (state) => {
         state.loading = false;
         state.otpSent = true;
       })
-      .addCase(registerUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload?.message || "Registration failed";
-      })
+      .addCase(registerUser.rejected, rejected)
 
-      // OTP verify reducers
-      .addCase(verifyOtp.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(verifyOtp.pending, pending)
       .addCase(verifyOtp.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload;
         state.otpSent = false;
       })
-      .addCase(verifyOtp.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload?.message || "OTP verification failed";
-      })
+      .addCase(verifyOtp.rejected, rejected)
 
-       // Forgot password reducers
-      .addCase(forgotPassword.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(forgotPassword.pending, pending)
       .addCase(forgotPassword.fulfilled, (state) => {
         state.loading = false;
-        state.otpSent = true;
       })
-      .addCase(forgotPassword.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload?.message || "Failed to send OTP";
-      })
-      
-      // Reset password reducers
-      .addCase(resetPassword.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(forgotPassword.rejected, rejected)
+
+      .addCase(resetPassword.pending, pending)
       .addCase(resetPassword.fulfilled, (state) => {
         state.loading = false;
       })
-      .addCase(resetPassword.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload?.message || "Password reset failed";
-      });
+      .addCase(resetPassword.rejected, rejected)
 
-  }
+      .addCase(updateProfile.pending, pending)
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(updateProfile.rejected, rejected);
+  },
 });
 
 export const { logout, resetOtpState, clearError } = authSlice.actions;

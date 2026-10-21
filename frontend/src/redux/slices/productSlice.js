@@ -1,82 +1,84 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import api, { errorPayload } from "../../utils/api";
 
-//Async thunk to fetch products by collection and optimal filters
-
+//fetch products by collection and optional filters
 export const fetchProductsByFilters = createAsyncThunk(
   "products/fetchByFilters",
-  async ({
-    collection,
-    size,
-    color,
-    gender,
-    minPrice,
-    maxPrice,
-    sortBy,
-    search,
-    category,
-    material,
-    brand,
-    limit,
-  }) => {
-    const query = new URLSearchParams();
-    if (collection) query.append("collection", collection);
-    if (size) query.append("size", size);
-    if (color) query.append("color", color);
-    if (gender) query.append("gender", gender);
-    if (minPrice) query.append("minPrice", minPrice);
-    if (maxPrice) query.append("maxPrice", maxPrice);
-    if (sortBy) query.append("sortBy", sortBy);
-    if (search) query.append("search", search);
-    if (category) query.append("category", category);
-    if (material) query.append("material", material);
-    if (brand) query.append("brand", brand);
-    if (limit) query.append("limit", limit);
-
-    const response = await axios.get(
-      `${import.meta.env.VITE_BACKEND_URL}/api/products?${query.toString()}`
-    );
-    return response.data;
+  async (filters, { rejectWithValue }) => {
+    try {
+      const params = Object.fromEntries(
+        Object.entries(filters).filter(([, v]) => v !== undefined && v !== null && v !== "")
+      );
+      const { data } = await api.get("/products", { params });
+      return data;
+    } catch (error) {
+      return rejectWithValue(errorPayload(error, "Failed to load products"));
+    }
   }
 );
 
-//Async thunk to fetch single product
+//fetch a single product
 export const fetchProductDetails = createAsyncThunk(
-  "/products/fetchProductDetails",
-  async (id) => {
-    const response = await axios.get(
-      `${import.meta.env.VITE_BACKEND_URL}/api/products/${id}`
-    );
-    return response.data;
+  "products/fetchProductDetails",
+  async (id, { rejectWithValue }) => {
+    try {
+      const { data } = await api.get(`/products/${id}`);
+      return data;
+    } catch (error) {
+      return rejectWithValue(errorPayload(error, "Product not found"));
+    }
   }
 );
 
-//Async thunk to fetch single product
-export const updateProduct = createAsyncThunk(
-  "/products/updateProduct",
-  async ({id, productData}) => {
-    const response = await axios.put(
-      `${import.meta.env.VITE_BACKEND_URL}/api/products/${id}`,
-      productData,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("userToken")}`,
-        },
-      }
-    );
-    return response.data;
-  }
-);
-
-//Async thunk to fetch single product
-
+//fetch similar products (same gender and category)
 export const fetchSimilarProducts = createAsyncThunk(
-  "/products/fetchSimilarProducts ",
-  async ({ id }) => {
-    const response = await axios.get(
-      `${import.meta.env.VITE_BACKEND_URL}/api/products/similar/${id}`
-    );
-    return response.data;
+  "products/fetchSimilarProducts",
+  async ({ id }, { rejectWithValue }) => {
+    try {
+      const { data } = await api.get(`/products/similar/${id}`);
+      return data;
+    } catch (error) {
+      return rejectWithValue(errorPayload(error));
+    }
+  }
+);
+
+//available filter values from the catalogue
+export const fetchFacets = createAsyncThunk(
+  "products/fetchFacets",
+  async (_, { rejectWithValue }) => {
+    try {
+      const { data } = await api.get("/products/facets");
+      return data;
+    } catch (error) {
+      return rejectWithValue(errorPayload(error));
+    }
+  },
+  { condition: (_, { getState }) => !getState().products.facets }
+);
+
+//reviews + rating summary for a product
+export const fetchReviews = createAsyncThunk(
+  "products/fetchReviews",
+  async ({ id, page = 1, sort = "newest" }, { rejectWithValue }) => {
+    try {
+      const { data } = await api.get(`/products/${id}/reviews`, { params: { page, sort } });
+      return { ...data, productId: id };
+    } catch (error) {
+      return rejectWithValue(errorPayload(error));
+    }
+  }
+);
+
+export const submitReview = createAsyncThunk(
+  "products/submitReview",
+  async ({ id, review }, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post(`/products/${id}/reviews`, review);
+      return data;
+    } catch (error) {
+      return rejectWithValue(errorPayload(error, "Could not post your review"));
+    }
   }
 );
 
@@ -84,102 +86,82 @@ const productsSlice = createSlice({
   name: "products",
   initialState: {
     products: [],
-    selectedProduct: null, //store detail of single product
-    similarProducts: [],
+    total: 0,
+    page: 1,
+    pages: 1,
     loading: false,
     error: null,
-    filters: {
-      category: "",
-      size: "",
-      color: "",
-      gender: "",
-      brand: "",
-      minPrice: "",
-      maxPrice: "",
-      sortBy: "",
-      search: "",
-      material: "",
-      collection: "",
-    },
+    selectedProduct: null,
+    detailLoading: false,
+    detailError: null,
+    similarProducts: [],
+    similarLoading: false,
+    facets: null,
+    reviews: { productId: null, summary: null, reviews: [], total: 0, page: 1, pages: 1 },
+    reviewsLoading: false,
   },
-  reducers: {
-    setFilters: (state, action) => {
-      state.filters = { ...state.filters, ...action.payload };
-    },
-    clearFilters: (state) => {
-      state.filters = {
-        category: "",
-        size: "",
-        color: "",
-        gender: "",
-        brand: "",
-        minPrice: "",
-        maxPrice: "",
-        sortBy: "",
-        search: "",
-        material: "",
-        collection: "",
-      };
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
-      //handle fetching product with filter
       .addCase(fetchProductsByFilters.pending, (state) => {
-        (state.loading = true), (state.error = null);
+        state.loading = true;
+        state.error = null;
       })
       .addCase(fetchProductsByFilters.fulfilled, (state, action) => {
+        const { products, total, page, pages } = action.payload;
         state.loading = false;
-        state.products = Array.isArray(action.payload) ? action.payload : [];
+        // Page > 1 appends ("Load more"); page 1 replaces.
+        state.products = page > 1 ? [...state.products, ...products] : products;
+        state.total = total;
+        state.page = page;
+        state.pages = pages;
       })
       .addCase(fetchProductsByFilters.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload?.message;
       })
-      //handle fetching single product detail
       .addCase(fetchProductDetails.pending, (state) => {
-        (state.loading = true), (state.error = null);
+        state.detailLoading = true;
+        state.detailError = null;
       })
       .addCase(fetchProductDetails.fulfilled, (state, action) => {
-        state.loading = false;
+        state.detailLoading = false;
         state.selectedProduct = action.payload;
       })
       .addCase(fetchProductDetails.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
+        state.detailLoading = false;
+        state.detailError = action.payload?.message;
       })
-      //handle updating product
-      .addCase(updateProduct.pending, (state) => {
-        (state.loading = true), (state.error = null);
-      })
-      .addCase(updateProduct.fulfilled, (state, action) => {
-        state.loading = false;
-        const updatedProduct = action.payload;
-        const index = state.products.findIndex(
-          (product) => product._id === updatedProduct._id
-        );
-        if (index !== -1) {
-          state.products[index] = updatedProduct;
-        }
-      })
-      .addCase(updateProduct.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      })
-
-       .addCase(fetchSimilarProducts.pending, (state) => {
-        (state.loading = true), (state.error = null);
+      .addCase(fetchSimilarProducts.pending, (state) => {
+        state.similarLoading = true;
       })
       .addCase(fetchSimilarProducts.fulfilled, (state, action) => {
-        state.loading = false;
+        state.similarLoading = false;
         state.similarProducts = action.payload;
       })
-      .addCase(fetchSimilarProducts.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
+      .addCase(fetchSimilarProducts.rejected, (state) => {
+        state.similarLoading = false;
+        state.similarProducts = [];
       })
+      .addCase(fetchFacets.fulfilled, (state, action) => {
+        state.facets = action.payload;
+      })
+      .addCase(fetchReviews.pending, (state) => {
+        state.reviewsLoading = true;
+      })
+      .addCase(fetchReviews.fulfilled, (state, action) => {
+        const { productId, page, reviews } = action.payload;
+        const append = page > 1 && state.reviews.productId === productId;
+        state.reviewsLoading = false;
+        state.reviews = {
+          ...action.payload,
+          reviews: append ? [...state.reviews.reviews, ...reviews] : reviews,
+        };
+      })
+      .addCase(fetchReviews.rejected, (state) => {
+        state.reviewsLoading = false;
+      });
   },
 });
 
-export const {setFilters,clearFilters}=productsSlice.actions
 export default productsSlice.reducer;
