@@ -1,326 +1,220 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { createCheckout } from "../../redux/slices/checkoutSlice";
-import { mergeCart } from "../../redux/slices/cartSlice"; // Your existing action
+import { toast } from "sonner";
+import { FiLock, FiTag } from "react-icons/fi";
+import { fetchQuote, placeOrder } from "../../redux/slices/checkoutSlice";
+import { clearCart } from "../../redux/slices/cartSlice";
 import { formatPrice } from "../../utils/formatPrice";
+import { imageUrl } from "../../utils/product";
+import { EmptyState } from "../Common/Feedback";
+import usePageTitle from "../../hooks/usePageTitle";
+
+const CITIES = ["Karachi", "Lahore", "Islamabad", "Rawalpindi", "Faisalabad", "Multan", "Peshawar", "Quetta", "Hyderabad", "Sialkot", "Gujranwala"];
+
+const Field = ({ label, id, className = "", ...props }) => (
+  <div className={className}>
+    <label htmlFor={id} className="label">{label}</label>
+    <input id={id} className="input" {...props} />
+  </div>
+);
 
 const Checkout = () => {
-  const [checkoutId, setCheckoutId] = useState();
-  const [isMergingCart, setIsMergingCart] = useState(false);
-  const [hasAttemptedMerge, setHasAttemptedMerge] = useState(false);
+  usePageTitle("Checkout");
   const dispatch = useDispatch();
-  const { cart, loading, error } = useSelector((state) => state.cart);
-  const { user, guestId } = useSelector((state) => state.auth);
-
   const navigate = useNavigate();
+  const { cart } = useSelector((state) => state.cart);
+  const { user } = useSelector((state) => state.auth);
+  const { quote, quoteLoading, loading, error } = useSelector((state) => state.checkout);
 
-  const [shippingAddress, setShippingAddress] = useState({
-    firstName: "",
-    lastName: "",
-    address: "",
-    city: "",
-    postalCode: "",
-    country: "",
-    phone: "",
+  const saved = user?.shippingAddress || {};
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState({
+    fullName: saved.fullName || user?.name || "",
+    phone: saved.phone || user?.phone || "",
+    address: saved.address || "",
+    city: saved.city || "",
+    postalCode: saved.postalCode || "",
+    country: "Pakistan",
   });
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState("");
+
+  const items = cart?.products || [];
+  const cartKey = items.map((i) => `${i.productId}${i.size}${i.color}${i.quantity}`).join("|");
 
   useEffect(() => {
-    if (!cart || !cart.products || cart.products.length === 0) {
-      navigate("/");
-    }
-  }, [cart, navigate]);
+    if (items.length) dispatch(fetchQuote({ couponCode: appliedCoupon, email: user ? undefined : email }));
+    // Re-price whenever the cart or promo code changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch, cartKey, appliedCoupon]);
 
-  // Check if we need to merge the guest cart with user cart
-  useEffect(() => {
-    const mergeGuestCart = async () => {
-      // If user is logged in, we have a guestId, and haven't attempted merge yet
-      if (user && guestId && !hasAttemptedMerge) {
-        setIsMergingCart(true);
-        setHasAttemptedMerge(true);
-        
-        try {
-          await dispatch(mergeCart({ guestId, userId: user._id })).unwrap();
-          console.log("Cart merged successfully");
-        } catch (err) {
-          console.error("Failed to merge cart:", err);
-          // Even if merge fails, we can still proceed with checkout
-          // The user might not have a guest cart anymore
-        } finally {
-          setIsMergingCart(false);
-        }
-      }
-    };
-
-    mergeGuestCart();
-  }, [user, guestId, dispatch, hasAttemptedMerge]);
-
-  // CSS classes
-  const pageWrapper = "min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8";
-  const formWrapper = "w-full bg-gradient-to-br from-white to-gray-50 p-8 rounded-2xl shadow-xl border border-gray-100";
-  const summaryWrapper = "w-full bg-gradient-to-br from-white to-gray-50 p-8 rounded-2xl shadow-xl border border-gray-100";
-  const inputClass = "w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 shadow-sm";
-  const buttonPrimary = "w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white p-3 rounded-lg font-medium transition duration-200 shadow-md hover:shadow-lg";
-  const buttonDisabled = "w-full bg-gray-400 text-white p-3 rounded-lg font-medium cursor-not-allowed";
-  const labelClass = "block text-sm font-medium mb-2 text-gray-600";
-  const headingSecondary = "text-lg font-semibold text-indigo-800 mb-4";
-
-  const handleSubmitOrder = async (e) => {
+  const applyCoupon = async (e) => {
     e.preventDefault();
-
-    if (!cart || cart.products.length === 0 || isMergingCart) return;
-
-    try {
-      const res = await dispatch(
-        createCheckout({
-          checkoutItems: cart.products,
-          shippingAddress: {
-            fullName: `${shippingAddress.firstName} ${shippingAddress.lastName}`,
-            address: shippingAddress.address,
-            city: shippingAddress.city,
-            postalCode: shippingAddress.postalCode,
-            country: shippingAddress.country,
-            phone: shippingAddress.phone,
-          },
-          paymentMethod: "COD",
-          totalPrice: cart.totalPrice,
-        })
-      );
-
-      if (res.payload && res.payload._id) {
-        const newCheckoutId = res.payload._id;
-        setCheckoutId(newCheckoutId);
-
-        await axios.put(
-          `${import.meta.env.VITE_BACKEND_URL}/api/checkout/${newCheckoutId}/pay`,
-          {
-            paymentStatus: "paid",
-            paymentDetails: { method: "Cash on Delivery" },
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("userToken")}`,
-            },
-          }
-        );
-
-        await axios.post(
-          `${import.meta.env.VITE_BACKEND_URL}/api/checkout/${newCheckoutId}/finalize`,
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("userToken")}`,
-            },
-          }
-        );
-
-        navigate("/order-confirmation");
-      }
-    } catch (err) {
-      console.error("Order submission failed:", err);
-      // Handle specific error cases
-      if (err.response?.status === 401) {
-        alert("Your session has expired. Please log in again.");
-        navigate("/login");
-      }
+    const code = couponInput.trim().toUpperCase();
+    if (!code) return;
+    const result = await dispatch(fetchQuote({ couponCode: code, email: user ? undefined : email })).unwrap().catch(() => null);
+    if (result?.couponCode) {
+      setAppliedCoupon(code);
+      toast.success(`${code} applied`);
+    } else {
+      toast.error(result?.couponError || "That code didn't work");
     }
   };
 
-  if (loading || isMergingCart) return (
-    <div className="flex flex-col justify-center items-center min-h-screen">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mb-4"></div>
-      <p className="text-gray-600">
-        {isMergingCart ? "Merging your cart..." : "Loading your cart..."}
-      </p>
-    </div>
-  );
-  
-  if (error) return (
-    <div className="text-red-500 text-center p-4 bg-red-50 rounded-lg">
-      Error: {error}
-    </div>
-  );
-  
-  if (!cart || !cart.products || cart.products.length === 0) return (
-    <div className="text-center p-8 bg-white rounded-lg shadow">
-      <p className="text-gray-600">Your cart is empty</p>
-      <button 
-        onClick={() => navigate("/")}
-        className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
-      >
-        Continue Shopping
-      </button>
-    </div>
-  );
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const order = await dispatch(
+        placeOrder({
+          email: user ? undefined : email,
+          shippingAddress: address,
+          paymentMethod: "COD",
+          couponCode: appliedCoupon || undefined,
+        })
+      ).unwrap();
+      dispatch(clearCart());
+      navigate("/order-confirmation", { state: { orderId: order._id } });
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
+  if (items.length === 0) {
+    return (
+      <div className="container-page py-16">
+        <EmptyState title="Your bag is empty" description="Add a few pieces to your bag, then come back to check out." actionLabel="Start shopping" actionTo="/collections/all" />
+      </div>
+    );
+  }
+
+  const set = (field) => (e) => setAddress({ ...address, [field]: e.target.value });
+  const subtotal = quote?.itemsPrice ?? items.reduce((t, i) => t + i.price * i.quantity, 0);
 
   return (
-    <div className={pageWrapper}>
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-center text-indigo-800 mb-8">Checkout</h1>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left section - Shipping Form */}
-          <div className={formWrapper}>
-            <form onSubmit={handleSubmitOrder}>
-              <h2 className={headingSecondary}>Contact Details</h2>
-              <div className="mb-6">
-                <label className={labelClass}>Email</label>
-                <input
-                  type="email"
-                  value={user ? user.email : ""}
-                  className={inputClass}
-                  disabled
-                />
-              </div>
+    <div className="container-page py-10">
+      <h1 className="heading-display text-4xl">Checkout</h1>
 
-              <h2 className={headingSecondary}>Delivery Information</h2>
-              <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className={labelClass}>First Name</label>
-                  <input
-                    type="text"
-                    className={inputClass}
-                    required
-                    value={shippingAddress.firstName}
-                    onChange={(e) =>
-                      setShippingAddress({ ...shippingAddress, firstName: e.target.value })
-                    }
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Last Name</label>
-                  <input
-                    type="text"
-                    className={inputClass}
-                    required
-                    value={shippingAddress.lastName}
-                    onChange={(e) =>
-                      setShippingAddress({ ...shippingAddress, lastName: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <label className={labelClass}>Address</label>
-                <input
-                  type="text"
-                  value={shippingAddress.address}
-                  onChange={(e) =>
-                    setShippingAddress({ ...shippingAddress, address: e.target.value })
-                  }
-                  className={inputClass}
-                  required
-                />
-              </div>
-
-              <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className={labelClass}>City</label>
-                  <input
-                    type="text"
-                    className={inputClass}
-                    required
-                    value={shippingAddress.city}
-                    onChange={(e) =>
-                      setShippingAddress({ ...shippingAddress, city: e.target.value })
-                    }
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Postal Code</label>
-                  <input
-                    type="text"
-                    className={inputClass}
-                    required
-                    value={shippingAddress.postalCode}
-                    onChange={(e) =>
-                      setShippingAddress({ ...shippingAddress, postalCode: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <label className={labelClass}>Country</label>
-                <input
-                  type="text"
-                  value={shippingAddress.country}
-                  onChange={(e) =>
-                    setShippingAddress({ ...shippingAddress, country: e.target.value })
-                  }
-                  className={inputClass}
-                  required
-                />
-              </div>
-
-              <div className="mb-8">
-                <label className={labelClass}>Phone</label>
-                <input
-                  type="tel"
-                  value={shippingAddress.phone}
-                  onChange={(e) =>
-                    setShippingAddress({ ...shippingAddress, phone: e.target.value })
-                  }
-                  className={inputClass}
-                  required
-                />
-              </div>
-
-              <button 
-                type="submit" 
-                className={isMergingCart ? buttonDisabled : buttonPrimary}
-                disabled={isMergingCart}
-              >
-                {isMergingCart ? "Processing..." : "Confirm Your Order"}
-              </button>
-            </form>
-          </div>
-
-          {/* Right section - Order Summary */}
-          <div className={summaryWrapper}>
-            <h3 className={headingSecondary}>Order Summary</h3>
-            <div className="space-y-4 mb-6">
-              {cart.products.map((product, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-white"
-                >
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-16 h-16 object-cover rounded-md border border-gray-200"
-                    />
-                    <div>
-                      <h3 className="text-md font-medium text-gray-800">{product.name}</h3>
-                      <p className="text-sm text-gray-500">Size: {product.size}</p>
-                      <p className="text-sm text-gray-500">Color: {product.color}</p>
-                      <p className="text-sm text-gray-500">Qty: {product.quantity}</p>
-                    </div>
-                  </div>
-                  <p className="text-md font-semibold text-indigo-700">{formatPrice(product.price)}</p>
-                </div>
-              ))}
+      <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_420px]">
+        <form id="checkout-form" onSubmit={handleSubmit} className="space-y-10">
+          <section>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-semibold">1. Contact</h2>
+              {!user && (
+                <Link to="/login?redirect=/checkout" className="text-sm link-underline">
+                  Have an account? Sign in
+                </Link>
+              )}
             </div>
-            
-            <div className="space-y-3 border-t border-gray-200 pt-4">
-              <div className="flex justify-between items-center">
-                <p className="text-gray-600">Subtotal</p>
-                <p className="text-gray-800 font-medium">{formatPrice(cart.totalPrice)}</p>
-              </div>
-              <div className="flex justify-between items-center">
-                <p className="text-gray-600">Shipping</p>
-                <p className="text-green-600 font-medium">Free</p>
-              </div>
-              <div className="flex justify-between items-center pt-3 border-t border-gray-200">
-                <p className="text-lg font-semibold text-gray-800">Total</p>
-                <p className="text-xl font-bold text-indigo-700">{formatPrice(cart.totalPrice)}</p>
-              </div>
+            {user ? (
+              <p className="rounded-2xl bg-cream px-5 py-4 text-sm">
+                Signed in as <span className="font-semibold">{user.email}</span>
+              </p>
+            ) : (
+              <>
+                <Field label="Email" id="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+                <p className="mt-2 text-xs text-ink-muted">We'll email your order confirmation and you can track it with this address. No account needed.</p>
+              </>
+            )}
+          </section>
+
+          <section>
+            <h2 className="mb-4 text-lg font-semibold">2. Delivery address</h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Full name" id="fullName" autoComplete="name" required value={address.fullName} onChange={set("fullName")} />
+              <Field label="Phone" id="phone" type="tel" autoComplete="tel" required pattern="\+?[0-9\s-]{10,15}" title="10 to 15 digits, e.g. 03001234567" value={address.phone} onChange={set("phone")} placeholder="03xx xxxxxxx" />
+              <Field label="Address" id="address" className="sm:col-span-2" autoComplete="street-address" required value={address.address} onChange={set("address")} placeholder="House, street, area" />
+              <Field label="City" id="city" list="pk-cities" autoComplete="address-level2" required value={address.city} onChange={set("city")} />
+              <datalist id="pk-cities">
+                {CITIES.map((c) => <option key={c} value={c} />)}
+              </datalist>
+              <Field label="Postal code" id="postalCode" autoComplete="postal-code" required value={address.postalCode} onChange={set("postalCode")} />
+              <Field label="Country" id="country" className="sm:col-span-2" value="Pakistan" disabled />
             </div>
-          </div>
-        </div>
+          </section>
+
+          <section>
+            <h2 className="mb-4 text-lg font-semibold">3. Payment</h2>
+            <label className="flex items-start gap-4 rounded-2xl border-2 border-ink bg-white p-5">
+              <input type="radio" checked readOnly className="mt-1 h-4 w-4 accent-ink" />
+              <span>
+                <span className="block text-sm font-semibold">Cash on delivery</span>
+                <span className="mt-1 block text-xs text-ink-muted">Pay the courier in cash when your order arrives.</span>
+              </span>
+            </label>
+          </section>
+
+          {error && <p className="rounded-2xl bg-red-50 px-5 py-4 text-sm text-red-800">{error}</p>}
+
+          <button type="submit" disabled={loading} className="btn-primary w-full py-4 text-base lg:hidden">
+            {loading ? "Placing order..." : `Place order · ${formatPrice(quote?.totalPrice ?? subtotal)}`}
+          </button>
+        </form>
+
+        <aside className="h-fit space-y-6 rounded-3xl bg-cream p-6 lg:sticky lg:top-24">
+          <h2 className="text-lg font-semibold">Order summary</h2>
+          <ul className="max-h-72 space-y-4 overflow-y-auto pr-1">
+            {items.map((item) => (
+              <li key={`${item.productId}-${item.size}-${item.color}`} className="flex gap-3">
+                <div className="relative flex-shrink-0">
+                  <img src={imageUrl(item.image, 160)} alt={item.name} className="h-20 w-16 rounded-xl object-cover" />
+                  <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-ink px-1 text-[10px] font-semibold text-white">
+                    {item.quantity}
+                  </span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="line-clamp-2 text-sm font-medium">{item.name}</p>
+                  <p className="text-xs text-ink-muted">{item.color} · {item.size}</p>
+                </div>
+                <p className="text-sm font-semibold">{formatPrice(item.price * item.quantity)}</p>
+              </li>
+            ))}
+          </ul>
+
+          <form onSubmit={applyCoupon} className="flex gap-2">
+            <div className="relative flex-1">
+              <FiTag className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+              <input value={couponInput} onChange={(e) => setCouponInput(e.target.value)} placeholder="Promo code" className="input pl-10 uppercase" aria-label="Promo code" />
+            </div>
+            <button type="submit" className="btn-outline px-5" disabled={quoteLoading}>Apply</button>
+          </form>
+
+          <dl className="space-y-2 border-t border-stone-300/70 pt-4 text-sm">
+            <div className="flex justify-between">
+              <dt className="text-ink-soft">Subtotal</dt>
+              <dd>{formatPrice(subtotal)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-ink-soft">Shipping</dt>
+              <dd>{quote ? (quote.shippingPrice ? formatPrice(quote.shippingPrice) : "Free") : "..."}</dd>
+            </div>
+            {quote?.discount > 0 && (
+              <div className="flex justify-between text-success">
+                <dt>
+                  Promo {quote.couponCode}{" "}
+                  <button type="button" onClick={() => { setAppliedCoupon(""); setCouponInput(""); }} className="ml-1 text-xs text-ink-muted underline">
+                    remove
+                  </button>
+                </dt>
+                <dd>-{formatPrice(quote.discount)}</dd>
+              </div>
+            )}
+            {quote?.freeShippingRemaining > 0 && (
+              <p className="text-xs text-ink-muted">Add {formatPrice(quote.freeShippingRemaining)} more for free delivery.</p>
+            )}
+            <div className="flex justify-between border-t border-stone-300/70 pt-3 text-base font-semibold">
+              <dt>Total</dt>
+              <dd>{formatPrice(quote?.totalPrice ?? subtotal)}</dd>
+            </div>
+          </dl>
+
+          <button type="submit" form="checkout-form" disabled={loading} className="btn-primary hidden w-full py-4 text-base lg:flex">
+            {loading ? "Placing order..." : "Place order"}
+          </button>
+          <p className="flex items-center justify-center gap-2 text-xs text-ink-muted">
+            <FiLock className="h-3.5 w-3.5" /> Prices are confirmed securely on our server
+          </p>
+        </aside>
       </div>
     </div>
   );

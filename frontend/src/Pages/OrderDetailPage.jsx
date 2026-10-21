@@ -1,127 +1,114 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchOrderDetails } from "../redux/slices/orderSlice";
-import { formatPrice } from "../utils/formatPrice";
+import { toast } from "sonner";
+import { FiArrowLeft } from "react-icons/fi";
+import { cancelOrder, fetchOrderDetails } from "../redux/slices/orderSlice";
+import { openCartDrawer, reorder } from "../redux/slices/cartSlice";
+import { OrderItems, OrderTimeline, OrderTotals, ShippingAddress, StatusBadge } from "../components/Order/OrderParts";
+import { EmptyState, PageLoader } from "../components/Common/Feedback";
+import Modal from "../components/Common/Modal";
+import { formatDate, orderRef } from "../utils/order";
+import usePageTitle from "../hooks/usePageTitle";
+
 const OrderDetailPage = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
-  const { orderDetails, loading, error } = useSelector((state) => state.orders);
+  const { orderDetails: order, loading, error } = useSelector((state) => state.orders);
+  const [confirmCancel, setConfirmCancel] = useState(false);
+  const [busy, setBusy] = useState(false);
+  usePageTitle(order ? `Order ${orderRef(order)}` : "Order");
 
   useEffect(() => {
     dispatch(fetchOrderDetails(id));
   }, [dispatch, id]);
 
-  if (loading) {
-    return <p>Loading...</p>;
+  if (loading && !order) return <PageLoader label="Loading order" />;
+  if (error || !order) {
+    return (
+      <div className="container-page py-16">
+        <EmptyState title="Order not found" description={error} actionLabel="My orders" actionTo="/my-orders" />
+      </div>
+    );
   }
-  if (error) {
-    return <>Error: {error}</>;
-  }
+
+  const handleCancel = async () => {
+    setBusy(true);
+    try {
+      await dispatch(cancelOrder({ orderId: order._id })).unwrap();
+      toast.success("Your order has been cancelled");
+      setConfirmCancel(false);
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleReorder = async () => {
+    try {
+      const result = await dispatch(reorder(order._id)).unwrap();
+      if (result.added.length) {
+        toast.success(`${result.added.length} item(s) added to your bag`);
+        dispatch(openCartDrawer());
+      }
+      result.skipped.forEach((s) => toast.error(`${s.name}: ${s.reason}`));
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
 
   return (
-    <>
-      <div className="max-w-7xl mx-auto p-4 sm:p-6">
-        <h2 className="text-2xl md:text-3xl font-bold mb-6">Order Details</h2>
-        {!orderDetails ? (
-          <p>No Order Detail Found</p>
-        ) : (
-          // order information
-          <div className="p-4 sm:p-6 rounded-lg border">
-            <div className="flex flex-col sm:flex-row justify-between mb-8">
-              <div>
-                <h3 className="text-lg md:text-xl font-semibold">
-                  Order ID: #{orderDetails._id}
-                </h3>
-                <p className="text-gray-600">
-                  {new Date(orderDetails.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-              <div className="flex flex-col items-start sm:items-end mt-4 sm:mt-0">
-                <span
-                  className={`${
-                    orderDetails.isPaid
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
-                  } px-3 py-1 rounded-full text-sm font-medium mb-2`}
-                >
-                  {orderDetails.isPaid ? "Approved" : "Pending"}
-                </span>
+    <div className="container-page max-w-5xl py-10">
+      <Link to="/my-orders" className="inline-flex items-center gap-2 text-sm text-ink-muted hover:text-ink">
+        <FiArrowLeft /> All orders
+      </Link>
 
-                <span
-                  className={`${
-                    orderDetails.isDelivered
-                      ? "bg-green-100 text-green-700"
-                      : "bg-yellow-100 text-yellow-700"
-                  } px-3 py-1 rounded-full text-sm font-medium mb-2`}
-                >
-                  {orderDetails.isDelivered ? "Delivered" : "Pending Delivery"}
-                </span>
-              </div>
-            </div>
-            {/*customer, payment, shipping information */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-8">
-              <div className="">
-                <h4 className="text-lg font-semibold mb-2">Payment Info</h4>
-                <p>Payment Method: {orderDetails.paymentMethod}</p>
-                <p>Status: {orderDetails.isPaid ? "Paid" : "Unpaid"}</p>
-              </div>
-              <div className="">
-                <h4 className="text-lg font-semibold mb-2">Shipping Info</h4>
-                <p>Shipping Method: {orderDetails.shippingMethod}</p>
-                <p>
-                  Address:{" "}
-                  {`${orderDetails.shippingAddress.city}, ${orderDetails.shippingAddress.country}`}
-                </p>
-              </div>
-            </div>
-            {/* product list */}
-            <div className="overflow-x-auto">
-              <h4 className="text-lg font-semibold mb-4">Products</h4>
-              <table className=" min-w-full text-gray-600 mb-4">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="py-2 px-4">Name</th>
-                    <th className="py-2 px-4">Unit Price</th>
-                    <th className="py-2 px-4">Quantity</th>
-                    <th className="py-2 px-4">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orderDetails.orderItems.map((item) => (
-                    <tr key={item.productId} className="border-b">
-                      <td className="py-2 px-4 flex items-center">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-12 h-12 object-cover rounded-lg mr-4"
-                        />
-                        <Link
-                          to={`/product/${item.productId}`}
-                          className="text-blue-500 hover:underline"
-                        >
-                          {item.name}
-                        </Link>
-                      </td>
-                      <td className="py-2 px-4">{formatPrice(item.price)}</td>
-                      <td className="py-2 px-4">{item.quantity}</td>
-                      <td className="py-2 px-4">
-                        {formatPrice(item.price * item.quantity)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {/* back to order */}
-            <Link to="/my-orders" className="text-blue-500 hover:underline">
-              Back To My Order
-            </Link>
-          </div>
-        )}
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="heading-display text-3xl md:text-4xl">Order {orderRef(order)}</h1>
+          <p className="mt-1 text-sm text-ink-muted">Placed on {formatDate(order.createdAt)}</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <StatusBadge status={order.status} />
+          {order.status === "Processing" && (
+            <button onClick={() => setConfirmCancel(true)} className="btn-outline px-4 py-2 text-xs">Cancel order</button>
+          )}
+          <button onClick={handleReorder} className="btn-primary px-4 py-2 text-xs">Buy again</button>
+        </div>
       </div>
-    </>
+
+      <div className="card mt-8 p-6 md:p-8">
+        <OrderTimeline order={order} />
+      </div>
+
+      <div className="mt-6 grid gap-6 md:grid-cols-[1.4fr_1fr]">
+        <div className="card p-6">
+          <h2 className="mb-2 font-semibold">Items</h2>
+          <OrderItems items={order.orderItems} />
+        </div>
+        <div className="space-y-6">
+          <div className="card p-6">
+            <h2 className="mb-4 font-semibold">Payment</h2>
+            <OrderTotals order={order} />
+          </div>
+          <div className="card p-6">
+            <h2 className="mb-3 font-semibold">Shipping address</h2>
+            <ShippingAddress address={order.shippingAddress} email={order.email} />
+          </div>
+        </div>
+      </div>
+
+      <Modal open={confirmCancel} onClose={() => setConfirmCancel(false)} title="Cancel this order?">
+        <p className="text-sm text-ink-soft">
+          Order {orderRef(order)} hasn't shipped yet, so it can still be cancelled. This can't be undone.
+        </p>
+        <div className="mt-6 flex gap-3">
+          <button onClick={handleCancel} disabled={busy} className="btn-danger flex-1">{busy ? "Cancelling..." : "Yes, cancel order"}</button>
+          <button onClick={() => setConfirmCancel(false)} className="btn-outline">Keep order</button>
+        </div>
+      </Modal>
+    </div>
   );
 };
 

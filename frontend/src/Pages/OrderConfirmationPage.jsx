@@ -1,140 +1,67 @@
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { clearCart } from "../redux/slices/cartSlice";
-import { formatPrice } from "../utils/formatPrice";
+import React from "react";
+import { Link, Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { FiCheckCircle } from "react-icons/fi";
+import { OrderItems, OrderTimeline, OrderTotals, ShippingAddress } from "../components/Order/OrderParts";
+import { estimatedDelivery, orderRef } from "../utils/order";
+import usePageTitle from "../hooks/usePageTitle";
 
 const OrderConfirmationPage = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { checkout } = useSelector((state) => state.checkout);
+  usePageTitle("Order confirmed");
+  const order = useSelector((state) => state.checkout.lastOrder);
+  const { user } = useSelector((state) => state.auth);
+  const { shipping } = useSelector((state) => state.store.config);
 
-  useEffect(() => {
-    if (checkout && checkout._id) {
-      dispatch(clearCart());
-      localStorage.removeItem("cart");
-    } else {
-      navigate("/my-orders");
-    }
-  }, [dispatch, checkout, navigate]);
+  if (!order) return <Navigate to={user ? "/my-orders" : "/"} replace />;
 
-  const calculateEstimatedDelivery = (createdAt) => {
-    const orderDate = new Date(createdAt);
-    orderDate.setDate(orderDate.getDate() + 10); // After 10 days
-    return orderDate.toLocaleDateString();
-  };
-
-  // CSS classes based on your reference files
-  const pageWrapper = "min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8";
-  const contentWrapper = "w-full max-w-4xl bg-gradient-to-br from-white to-gray-50 p-8 rounded-2xl shadow-xl border border-gray-100 mx-auto";
-  const headingPrimary = "text-4xl font-bold text-center text-indigo-800 mb-8";
-  const headingSecondary = "text-xl font-semibold text-gray-800 mb-4";
-  const textMuted = "text-gray-600 text-sm";
-  const successText = "text-indigo-600 text-sm font-medium";
+  const trackLink = `/track-order?number=${encodeURIComponent(order.orderNumber || "")}&email=${encodeURIComponent(order.email || "")}`;
 
   return (
-    <div className={pageWrapper}>
-      <div className={contentWrapper}>
-        <h1 className={headingPrimary}>
-          Thank You For Your Order!
-        </h1>
-
-        {checkout && (
-          <div className="space-y-8">
-            {/* Order Info & Estimated Delivery */}
-            <div className="flex justify-between items-start flex-wrap gap-6 p-6 bg-indigo-50 rounded-lg border border-indigo-100">
-              <div>
-                <h2 className="text-lg font-semibold text-indigo-800">Order ID: {checkout._id}</h2>
-                <p className={textMuted}>
-                  Order Date: {new Date(checkout.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className={successText}>
-                  Estimated Delivery: {calculateEstimatedDelivery(checkout.createdAt)}
-                </p>
-              </div>
-            </div>
-
-            {/* Ordered Items */}
-            <div>
-              <h3 className={headingSecondary}>Ordered Items</h3>
-              <div className="space-y-4">
-                {checkout.checkoutItems.map((item) => (
-                  <div
-                    key={item.productId}
-                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition duration-200"
-                  >
-                    <div className="flex items-center gap-4">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-16 h-16 object-cover rounded-md border border-gray-200"
-                      />
-                      <div>
-                        <h4 className="text-md font-medium text-gray-800">{item.name}</h4>
-                        <p className="text-sm text-gray-500">
-                          {item.color} | {item.size}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-md font-medium text-indigo-700">{formatPrice(item.price)}</p>
-                      <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Payment & Delivery Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Payment */}
-              <div className="p-6 bg-white rounded-lg border border-gray-200">
-                <h4 className="text-lg font-semibold mb-3 text-indigo-800">Payment</h4>
-                <p className={textMuted}>Cash on Delivery</p>
-              </div>
-
-              {/* Delivery */}
-              <div className="p-6 bg-white rounded-lg border border-gray-200">
-                <h4 className="text-lg font-semibold mb-3 text-indigo-800">Delivery Address</h4>
-                <p className={textMuted}>
-                  {checkout.shippingAddress.address}
-                </p>
-                <p className={textMuted}>
-                  {checkout.shippingAddress.city},{" "}
-                  {checkout.shippingAddress.country}
-                </p>
-                {checkout.shippingAddress.postalCode && (
-                  <p className={textMuted}>
-                    Postal Code: {checkout.shippingAddress.postalCode}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Total Amount */}
-            <div className="p-6 bg-indigo-50 rounded-lg border border-indigo-100">
-              <div className="flex justify-between items-center">
-                <h4 className="text-lg font-semibold text-indigo-800">Total Amount</h4>
-                <p className="text-xl font-bold text-indigo-700">
-                  {formatPrice(checkout.totalPrice)}
-                </p>
-              </div>
-            </div>
-
-            {/* Continue Shopping Button */}
-            <div className="text-center pt-4">
-              <button
-                onClick={() => navigate("/collections/all")}
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-3 px-8 rounded-lg font-medium transition duration-200 shadow-md hover:shadow-lg"
-              >
-                Continue Shopping
-              </button>
-            </div>
-          </div>
-        )}
+    <div className="container-page max-w-4xl py-12">
+      <div className="text-center">
+        <FiCheckCircle className="mx-auto h-14 w-14 text-success" />
+        <h1 className="heading-display mt-5 text-4xl md:text-5xl">Thank you for your order!</h1>
+        <p className="mt-3 text-ink-soft">
+          Order <span className="font-mono font-semibold text-ink">{orderRef(order)}</span> is confirmed.
+          {order.email && <> A confirmation has been sent to <span className="font-semibold text-ink">{order.email}</span>.</>}
+        </p>
+        <p className="mt-2 text-sm text-ink-muted">Estimated delivery: {estimatedDelivery(order, shipping.estimatedDays)}</p>
       </div>
+
+      <div className="card mt-10 p-6 md:p-8">
+        <OrderTimeline order={order} />
+      </div>
+
+      <div className="mt-6 grid gap-6 md:grid-cols-[1.4fr_1fr]">
+        <div className="card p-6">
+          <h2 className="mb-2 font-semibold">Items</h2>
+          <OrderItems items={order.orderItems} />
+        </div>
+        <div className="space-y-6">
+          <div className="card p-6">
+            <h2 className="mb-4 font-semibold">Payment</h2>
+            <OrderTotals order={order} />
+          </div>
+          <div className="card p-6">
+            <h2 className="mb-3 font-semibold">Delivering to</h2>
+            <ShippingAddress address={order.shippingAddress} />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-10 flex flex-wrap justify-center gap-3">
+        {user ? (
+          <Link to={`/order/${order._id}`} className="btn-primary">View order</Link>
+        ) : (
+          <Link to={trackLink} className="btn-primary">Track this order</Link>
+        )}
+        <Link to="/collections/all" className="btn-outline">Continue shopping</Link>
+      </div>
+      {!user && (
+        <p className="mt-6 text-center text-sm text-ink-muted">
+          Want faster checkout next time? <Link to="/register" className="link-underline text-ink">Create an account</Link>
+        </p>
+      )}
     </div>
   );
 };

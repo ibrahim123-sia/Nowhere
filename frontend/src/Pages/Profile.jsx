@@ -1,76 +1,133 @@
-import React, { useEffect } from "react";
-import MyOrdersPage from "./MyOrdersPage";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { logout } from "../redux/slices/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner";
+import { logout, updateProfile } from "../redux/slices/authSlice";
 import { clearCart } from "../redux/slices/cartSlice";
+import { OrdersList } from "./MyOrdersPage";
+import usePageTitle from "../hooks/usePageTitle";
+
+const TABS = [
+  { id: "orders", label: "Orders" },
+  { id: "details", label: "Account details" },
+  { id: "address", label: "Address" },
+  { id: "password", label: "Password" },
+];
+
+const Field = ({ label, id, ...props }) => (
+  <div>
+    <label htmlFor={id} className="label">{label}</label>
+    <input id={id} className="input" {...props} />
+  </div>
+);
 
 const Profile = () => {
-  const { user } = useSelector((state) => state.auth);
+  usePageTitle("My account");
+  const { user, loading } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [tab, setTab] = useState("orders");
+  const [details, setDetails] = useState({ name: user?.name || "", phone: user?.phone || "" });
+  const [address, setAddress] = useState({
+    fullName: user?.shippingAddress?.fullName || user?.name || "",
+    phone: user?.shippingAddress?.phone || user?.phone || "",
+    address: user?.shippingAddress?.address || "",
+    city: user?.shippingAddress?.city || "",
+    postalCode: user?.shippingAddress?.postalCode || "",
+    country: "Pakistan",
+  });
+  const [passwords, setPasswords] = useState({ currentPassword: "", newPassword: "", confirm: "" });
 
-  useEffect(() => {
-    if (!user) {
-      navigate("/login");
+  const save = async (updates, message) => {
+    try {
+      await dispatch(updateProfile(updates)).unwrap();
+      toast.success(message);
+      return true;
+    } catch (err) {
+      toast.error(err.message);
+      return false;
     }
-  }, [user, navigate]);
+  };
+
+  const savePassword = async (e) => {
+    e.preventDefault();
+    if (passwords.newPassword !== passwords.confirm) return toast.error("New passwords don't match");
+    const ok = await save({ currentPassword: passwords.currentPassword, newPassword: passwords.newPassword }, "Password updated");
+    if (ok) setPasswords({ currentPassword: "", newPassword: "", confirm: "" });
+  };
 
   const handleLogout = () => {
     dispatch(logout());
     dispatch(clearCart());
-    navigate("/login");
+    navigate("/");
   };
 
-  // CSS classes based on your reference files
-  const pageWrapper = "min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8";
-  const sidebarWrapper = "w-full bg-gradient-to-br from-white to-gray-50 p-8 rounded-2xl shadow-xl border border-gray-100 h-fit";
-  const buttonDanger = "w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-3 px-4 rounded-lg font-medium transition duration-200 shadow-md hover:shadow-lg";
+  const setAddr = (f) => (e) => setAddress({ ...address, [f]: e.target.value });
 
   return (
-    <div className={pageWrapper}>
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Left sidebar - User Info */}
-          <div className="w-full lg:w-1/4">
-            <div className={sidebarWrapper}>
-              <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-white">
-                    {user?.name?.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <h1 className="text-2xl font-bold text-indigo-800 mb-2">{user?.name}</h1>
-                <p className="text-gray-600">{user?.email}</p>
-                {user?.role === "admin" && (
-                  <span className="inline-block mt-2 bg-indigo-100 text-indigo-700 text-sm px-3 py-1 rounded-full">
-                    Admin
-                  </span>
-                )}
-              </div>
-
-              <div className="space-y-4 border-t border-gray-200 pt-6">
-                <button
-                  onClick={() => navigate("/collections/all")}
-                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-2 px-4 rounded-lg font-medium transition duration-200 shadow-md hover:shadow-lg"
-                >
-                  Continue Shopping
-                </button>
-                
-                <button
-                  onClick={handleLogout}
-                  className={buttonDanger}
-                >
-                  Logout
-                </button>
-              </div>
-            </div>
+    <div className="container-page py-10">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-ink font-display text-2xl text-white">
+            {user?.name?.charAt(0).toUpperCase()}
+          </span>
+          <div>
+            <h1 className="heading-display text-3xl">Hi, {user?.name?.split(" ")[0]}</h1>
+            <p className="text-sm text-ink-muted">{user?.email}</p>
           </div>
+        </div>
+        <button onClick={handleLogout} className="btn-outline">Log out</button>
+      </div>
 
-          {/* Right section - Orders */}
-          <div className="w-full lg:w-3/4">
-            <MyOrdersPage />
-          </div>
+      <div className="mt-8 grid gap-8 lg:grid-cols-[220px_1fr]">
+        <nav className="flex gap-2 overflow-x-auto scrollbar-hide lg:flex-col" aria-label="Account sections">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`whitespace-nowrap rounded-full px-5 py-2.5 text-left text-sm font-medium transition lg:rounded-xl ${tab === t.id ? "bg-ink text-white" : "text-ink-soft hover:bg-stone-100"}`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </nav>
+
+        <div className="min-w-0">
+          {tab === "orders" && <OrdersList />}
+
+          {tab === "details" && (
+            <form onSubmit={(e) => { e.preventDefault(); save(details, "Details saved"); }} className="card max-w-xl space-y-4 p-6">
+              <Field label="Full name" id="p-name" required value={details.name} onChange={(e) => setDetails({ ...details, name: e.target.value })} />
+              <Field label="Phone" id="p-phone" type="tel" value={details.phone} onChange={(e) => setDetails({ ...details, phone: e.target.value })} />
+              <Field label="Email" id="p-email" value={user?.email || ""} disabled />
+              <button type="submit" disabled={loading} className="btn-primary">Save changes</button>
+            </form>
+          )}
+
+          {tab === "address" && (
+            <form onSubmit={(e) => { e.preventDefault(); save({ shippingAddress: address }, "Address saved"); }} className="card max-w-xl space-y-4 p-6">
+              <p className="text-sm text-ink-muted">Used to pre-fill checkout.</p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Full name" id="a-name" required value={address.fullName} onChange={setAddr("fullName")} />
+                <Field label="Phone" id="a-phone" type="tel" required value={address.phone} onChange={setAddr("phone")} />
+              </div>
+              <Field label="Address" id="a-address" required value={address.address} onChange={setAddr("address")} />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="City" id="a-city" required value={address.city} onChange={setAddr("city")} />
+                <Field label="Postal code" id="a-postal" required value={address.postalCode} onChange={setAddr("postalCode")} />
+              </div>
+              <button type="submit" disabled={loading} className="btn-primary">Save address</button>
+            </form>
+          )}
+
+          {tab === "password" && (
+            <form onSubmit={savePassword} className="card max-w-xl space-y-4 p-6">
+              <Field label="Current password" id="pw-current" type="password" autoComplete="current-password" required value={passwords.currentPassword} onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })} />
+              <Field label="New password" id="pw-new" type="password" autoComplete="new-password" minLength={6} required value={passwords.newPassword} onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })} />
+              <Field label="Confirm new password" id="pw-confirm" type="password" autoComplete="new-password" minLength={6} required value={passwords.confirm} onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })} />
+              <button type="submit" disabled={loading} className="btn-primary">Update password</button>
+            </form>
+          )}
         </div>
       </div>
     </div>
