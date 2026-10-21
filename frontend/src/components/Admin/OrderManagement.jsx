@@ -1,155 +1,166 @@
 import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { fetchAllOrders, updateOrderStatus } from "../../redux/slices/adminOrderSlice";
+import { toast } from "sonner";
+import { FiChevronDown, FiTrash2 } from "react-icons/fi";
+import { deleteOrder, fetchAllOrders, updateOrderStatus } from "../../redux/slices/adminOrderSlice";
+import { OrderItems, ShippingAddress, StatusBadge } from "../Order/OrderParts";
+import ConfirmDialog from "./ConfirmDialog";
+import { ErrorState } from "../Common/Feedback";
 import { formatPrice } from "../../utils/formatPrice";
+import { formatDate, orderRef } from "../../utils/order";
+import usePageTitle from "../../hooks/usePageTitle";
+
+const STATUSES = ["Processing", "Shipped", "Delivered", "Cancelled"];
+const NEXT = { Processing: ["Shipped", "Cancelled"], Shipped: ["Delivered"], Delivered: [], Cancelled: [] };
 
 const OrderManagement = () => {
+  usePageTitle("Orders");
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { user } = useSelector((state) => state.auth);
+  const [params, setParams] = useSearchParams();
+  const statusFilter = params.get("status") || "";
   const { orders, loading, error } = useSelector((state) => state.adminOrders);
+  const [expanded, setExpanded] = useState(null);
+  const [toDelete, setToDelete] = useState(null);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (user && user.role !== "admin") {
-      navigate("/");
-    } else {
-      dispatch(fetchAllOrders());
-    }
-  }, [user, navigate, dispatch]);
+    dispatch(fetchAllOrders(statusFilter));
+  }, [dispatch, statusFilter]);
 
-  const handleStatusChange = (orderId, status) => {
-    dispatch(updateOrderStatus({ id: orderId, status }));
+  const changeStatus = async (order, status) => {
+    try {
+      await dispatch(updateOrderStatus({ id: order._id, status })).unwrap();
+      toast.success(`${orderRef(order)} marked ${status}`);
+      if (statusFilter && statusFilter !== status) dispatch(fetchAllOrders(statusFilter));
+    } catch (err) {
+      toast.error(err.message);
+    }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-      </div>
-    );
-  }
-  if (error) {
-    return (
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="bg-red-50 border-l-4 border-red-500 p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg
-                className="h-5 w-5 text-red-500"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-red-700">Error: {error}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const confirmDelete = async () => {
+    setBusy(true);
+    try {
+      await dispatch(deleteOrder(toDelete._id)).unwrap();
+      toast.success("Order deleted");
+      setToDelete(null);
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Order Management</h2>
+    <div className="mx-auto max-w-6xl">
+      <h1 className="heading-display text-3xl">Orders</h1>
 
-      <div className="overflow-x-auto shadow-lg sm:rounded-lg border border-gray-200 bg-white">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gradient-to-r from-indigo-600 to-purple-600">
-            <tr>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider"
-              >
-                Order ID
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider"
-              >
-                Customer
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider"
-              >
-                Total price
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider"
-              >
-                Status
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider"
-              >
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {orders.length > 0 ? (
-              orders.map((order) => (
-                <tr
-                  key={order._id}
-                  className="hover:bg-gray-50 transition-colors duration-150"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    #{order._id.substring(0, 8)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {order.name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatPrice(order.totalPrice)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <select
-                      value={order.status}
-                      onChange={(e) =>
-                        handleStatusChange(order._id, e.target.value)
-                      }
-                      className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2 shadow-sm"
-                    >
-                      <option value="Processing">Processing</option>
-                      <option value="Shipped">Shipped</option>
-                      <option value="Delivered">Delivered</option>
-                      <option value="Cancelled">Cancelled</option>
-                    </select>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button
-                      onClick={() => handleStatusChange(order._id, "Delivered")}
-                      className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white px-4 py-2 rounded-md shadow-sm hover:shadow-md transition-all duration-200"
-                    >
-                      Mark as Delivered
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="px-6 py-4 text-center text-sm text-gray-500"
-                >
-                  No orders found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <div className="mt-6 flex flex-wrap gap-2">
+        {["", ...STATUSES].map((s) => (
+          <button
+            key={s || "all"}
+            onClick={() => setParams(s ? { status: s } : {})}
+            className={`rounded-full border px-4 py-2 text-sm transition ${statusFilter === s ? "border-ink bg-ink text-white" : "border-stone-300 bg-white hover:border-ink"}`}
+          >
+            {s || "All"}
+          </button>
+        ))}
       </div>
+
+      {error && <div className="mt-4"><ErrorState message={error} onRetry={() => dispatch(fetchAllOrders(statusFilter))} /></div>}
+
+      <div className="card mt-6 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[860px] text-sm">
+            <thead className="border-b border-stone-200 bg-stone-50 text-left text-xs uppercase tracking-wider text-ink-muted">
+              <tr>
+                <th className="px-5 py-3 font-semibold">Order</th>
+                <th className="px-5 py-3 font-semibold">Customer</th>
+                <th className="px-5 py-3 font-semibold">Total</th>
+                <th className="px-5 py-3 font-semibold">Status</th>
+                <th className="px-5 py-3 text-right font-semibold">Update</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-stone-200">
+              {loading && orders.length === 0 &&
+                [0, 1, 2].map((i) => (
+                  <tr key={i}><td colSpan={5} className="px-5 py-3"><div className="skeleton h-10" /></td></tr>
+                ))}
+              {!loading && orders.length === 0 && (
+                <tr><td colSpan={5} className="px-5 py-10 text-center text-ink-muted">No orders found.</td></tr>
+              )}
+              {orders.map((order) => (
+                <React.Fragment key={order._id}>
+                  <tr className="hover:bg-stone-50">
+                    <td className="px-5 py-3">
+                      <button onClick={() => setExpanded(expanded === order._id ? null : order._id)} className="flex items-center gap-2 text-left">
+                        <FiChevronDown className={`transition ${expanded === order._id ? "rotate-180" : ""}`} />
+                        <span>
+                          <span className="block font-mono text-xs font-semibold">{orderRef(order)}</span>
+                          <span className="text-xs text-ink-muted">{formatDate(order.createdAt)} · {order.orderItems.length} item(s)</span>
+                        </span>
+                      </button>
+                    </td>
+                    <td className="px-5 py-3">
+                      <p className="font-medium">{order.user?.name || order.shippingAddress?.fullName || "Guest"}</p>
+                      <p className="text-xs text-ink-muted">
+                        {order.user ? order.user.email : `Guest · ${order.email || "no email"}`}
+                      </p>
+                    </td>
+                    <td className="px-5 py-3">
+                      <p className="font-medium">{formatPrice(order.totalPrice)}</p>
+                      <p className="text-xs text-ink-muted">{order.paymentMethod} · {order.isPaid ? "Paid" : "Unpaid"}</p>
+                    </td>
+                    <td className="px-5 py-3"><StatusBadge status={order.status} /></td>
+                    <td className="px-5 py-3">
+                      <div className="flex items-center justify-end gap-2">
+                        {NEXT[order.status].map((status) => (
+                          <button
+                            key={status}
+                            onClick={() => changeStatus(order, status)}
+                            className={`rounded-full px-3 py-1.5 text-xs font-semibold ${status === "Cancelled" ? "border border-stone-300 hover:border-sale hover:text-sale" : "bg-ink text-white hover:bg-ink-soft"}`}
+                          >
+                            {status === "Cancelled" ? "Cancel" : `Mark ${status.toLowerCase()}`}
+                          </button>
+                        ))}
+                        <button onClick={() => setToDelete(order)} className="btn-ghost px-2 py-1.5 hover:text-sale" aria-label="Delete order">
+                          <FiTrash2 />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  {expanded === order._id && (
+                    <tr className="bg-stone-50/60">
+                      <td colSpan={5} className="px-5 pb-5">
+                        <div className="grid gap-6 rounded-2xl bg-white p-5 md:grid-cols-[1.5fr_1fr]">
+                          <OrderItems items={order.orderItems} linkProducts={false} />
+                          <div className="space-y-4">
+                            <ShippingAddress address={order.shippingAddress} email={order.email} />
+                            <ul className="space-y-1 text-xs text-ink-muted">
+                              {order.statusHistory?.map((e, i) => (
+                                <li key={i}>{e.status} · {formatDate(e.at)}{e.note ? ` · ${e.note}` : ""}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <ConfirmDialog
+        open={Boolean(toDelete)}
+        title="Delete order?"
+        message={`Order ${toDelete ? orderRef(toDelete) : ""} will be removed permanently. Unshipped items go back into stock.`}
+        onConfirm={confirmDelete}
+        onClose={() => setToDelete(null)}
+        busy={busy}
+      />
     </div>
   );
 };

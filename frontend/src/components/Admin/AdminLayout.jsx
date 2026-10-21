@@ -1,46 +1,34 @@
 import React, { useState } from "react";
-import { FaBars } from "react-icons/fa";
-import AdminSidebar from "./AdminSidebar";
+import { FiMenu } from "react-icons/fi";
 import { Outlet } from "react-router-dom";
+import AdminSidebar from "./AdminSidebar";
 
 const AdminLayout = () => {
-  const [isSliderOpen, setIsSliderOpen] = useState(false);
-
-  const toggleSidebar = () => {
-    setIsSliderOpen(!isSliderOpen);
-  };
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row relative">
+    <div className="min-h-screen bg-stone-50 lg:flex">
       {/* Mobile top bar */}
-      <div className="flex md:hidden p-4 bg-gray-900 text-white z-20 items-center">
-        <button onClick={toggleSidebar}>
-          <FaBars size={24} />
+      <div className="sticky top-0 z-30 flex items-center gap-3 bg-ink px-4 py-3 text-white lg:hidden">
+        <button onClick={() => setIsSidebarOpen(true)} aria-label="Open admin menu">
+          <FiMenu className="h-6 w-6" />
         </button>
-        <h1 className="ml-4 text-xl font-medium">Admin Dashboard</h1>
+        <span className="font-display text-xl">Nowhere Admin</span>
       </div>
 
-      {/* Sidebar overlay (mobile) */}
-      {isSliderOpen && (
-        <div
-          className="fixed inset-0 z-10 bg-black bg-opacity-50 md:hidden"
-          onClick={toggleSidebar}
-        ></div>
-      )}
+      {isSidebarOpen && <div className="fixed inset-0 z-40 bg-ink/50 lg:hidden" onClick={() => setIsSidebarOpen(false)} />}
 
-      {/* Sidebar */}
-      <div
-        className={`bg-gray-900 w-64 min-h-screen text-white absolute md:relative transform 
-          ${isSliderOpen ? "translate-x-0" : "-translate-x-full"} 
-          transition-transform duration-300 md:translate-x-0 md:static md:block z-20`}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-ink transition-transform duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
-        <AdminSidebar />
-      </div>
+        <AdminSidebar onNavigate={() => setIsSidebarOpen(false)} />
+      </aside>
 
-      {/* Main content */}
-      <div className="flex-grow p-6 overflow-auto">
+      <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-10">
         <Outlet />
-      </div>
+      </main>
     </div>
   );
 };

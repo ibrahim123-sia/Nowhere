@@ -1,13 +1,21 @@
 import React from "react";
-import { FaBoxOpen, FaClipboardList, FaSignOutAlt, FaStore, FaUser } from "react-icons/fa";
-import { useDispatch } from "react-redux";
+import { FiBox, FiClipboard, FiGrid, FiLogOut, FiShoppingBag, FiUsers } from "react-icons/fi";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { logout } from "../../redux/slices/authSlice"
-import { clearCart } from "../../redux/slices/cartSlice"
+import { logout } from "../../redux/slices/authSlice";
+import { clearCart } from "../../redux/slices/cartSlice";
 
-const AdminSidebar = () => {
+const LINKS = [
+  { to: "/admin", label: "Dashboard", icon: FiGrid, end: true },
+  { to: "/admin/orders", label: "Orders", icon: FiClipboard },
+  { to: "/admin/products", label: "Products", icon: FiBox },
+  { to: "/admin/users", label: "Customers", icon: FiUsers },
+];
+
+const AdminSidebar = ({ onNavigate }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -15,71 +23,35 @@ const AdminSidebar = () => {
     navigate("/");
   };
 
-  // Theme variables based on reference files
-  const sidebarWrapper = "p-6 bg-gradient-to-br from-white to-gray-50 h-full border-r border-gray-100";
-  const navLinkActive = "bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-4 rounded-lg flex items-center space-x-2 shadow-sm";
-  const navLinkInactive = "text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 py-3 px-4 rounded-lg flex items-center space-x-2 transition-colors duration-200";
-  const logoutButton = "w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-3 px-4 rounded-lg flex items-center justify-center space-x-2 shadow-md hover:shadow-lg transition-all duration-200";
+  const linkClass = ({ isActive }) =>
+    `flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition ${
+      isActive ? "bg-white text-ink" : "text-white/70 hover:bg-white/10 hover:text-white"
+    }`;
 
   return (
-    <div className={sidebarWrapper}>
-      <div className="mb-6">
-        <Link to="/admin" className="text-2xl font-bold text-indigo-800">
-          Nowhere
-        </Link>
-      </div>
+    <div className="flex h-full flex-col p-5">
+      <Link to="/admin" className="px-2 font-display text-2xl font-semibold text-white">
+        Nowhere <span className="ml-1 align-middle font-sans text-[10px] font-semibold uppercase tracking-widest text-white/50">Admin</span>
+      </Link>
 
-      <h2 className="text-xl font-bold mb-6 text-gray-800">Admin Dashboard</h2>
-
-      <nav className="flex flex-col space-y-3">
-        <NavLink
-          to="/admin/users"
-          className={({ isActive }) =>
-            isActive ? navLinkActive : navLinkInactive
-          }
-        >
-          <FaUser className="w-4 h-4" />
-          <span>Users</span>
-        </NavLink>
-
-        <NavLink
-          to="/admin/products"
-          className={({ isActive }) =>
-            isActive ? navLinkActive : navLinkInactive
-          }
-        >
-          <FaBoxOpen className="w-4 h-4" />
-          <span>Products</span>
-        </NavLink>
-
-        <NavLink
-          to="/admin/orders"
-          className={({ isActive }) =>
-            isActive ? navLinkActive : navLinkInactive
-          }
-        >
-          <FaClipboardList className="w-4 h-4" />
-          <span>Orders</span>
-        </NavLink>
-
-        <NavLink
-          to="/"
-          className={({ isActive }) =>
-            isActive ? navLinkActive : navLinkInactive
-          }
-        >
-          <FaStore className="w-4 h-4" />
-          <span>Shop</span>
+      <nav className="mt-10 flex flex-col gap-1" onClick={onNavigate}>
+        {LINKS.map(({ to, label, icon: Icon, end }) => (
+          <NavLink key={to} to={to} end={end} className={linkClass}>
+            <Icon className="h-4 w-4" />
+            {label}
+          </NavLink>
+        ))}
+        <NavLink to="/" className={linkClass}>
+          <FiShoppingBag className="h-4 w-4" />
+          View store
         </NavLink>
       </nav>
 
-      <div className="mt-8">
-        <button
-          onClick={handleLogout}
-          className={logoutButton}
-        >
-          <FaSignOutAlt className="w-4 h-4" />
-          <span>Logout</span>
+      <div className="mt-auto border-t border-white/10 pt-5">
+        <p className="px-2 text-sm font-medium text-white">{user?.name}</p>
+        <p className="truncate px-2 text-xs text-white/50">{user?.email}</p>
+        <button onClick={handleLogout} className="mt-4 flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-white/70 hover:bg-white/10 hover:text-white">
+          <FiLogOut className="h-4 w-4" /> Log out
         </button>
       </div>
     </div>
