@@ -9,6 +9,7 @@ const productService = require("../services/productService");
 const cartService = require("../services/cartService");
 const orderService = require("../services/orderService");
 const { sendOrderConfirmation } = require("../utils/mailer");
+const { productPath } = require("../utils/text");
 
 const PENDING_TTL_MS = 15 * 60 * 1000;
 
@@ -36,7 +37,7 @@ function productCard(p) {
     inStock: p.countInStock > 0,
     onlyLeft: p.countInStock > 0 && p.countInStock <= 5 ? p.countInStock : undefined,
     image: p.images?.[0]?.url,
-    url: `/product/${p._id}`,
+    url: productPath(p),
   };
 }
 

@@ -127,6 +127,8 @@ const check = (name, cond, extra) => {
   check("invalid id -> 404", r.status === 404);
   r = await api("GET", "/products/best-sellers?limit=4");
   check("best sellers", r.data.length === 4);
+  r = await api("GET", "/products/sitemap");
+  check("sitemap data lists published products and collections", r.data.products.length === 40 && r.data.collections.includes("Summer") && r.data.products[0].name, r.data.products?.length);
   r = await api("GET", "/store/config");
   check("store config hides coupons", r.data.shipping && !r.data.coupons);
 
@@ -262,7 +264,7 @@ const check = (name, cond, extra) => {
   check("reply joins pre-tool text and final text", c.reply.startsWith("Let me look.") && c.reply.includes("I found"), c.reply);
   const sessionId = c.events.find((e) => e.event === "session").data.sessionId;
   const firstCard = c.events.find((e) => e.event === "products").data.cards[0];
-  check("product cards have image/url", firstCard.image && firstCard.url.startsWith("/product/"), firstCard);
+  check("product cards have image and an SEO-friendly url", firstCard.image && /^\/product\/[a-z0-9-]+-[a-f0-9]{24}$/.test(firstCard.url), firstCard.url);
   c = await chat({ guestId: agentGuest, sessionId, message: "add the first one" });
   check("agent adds to cart", c.types.includes("cart") && c.reply.includes("Added"), c);
   r = await api("GET", `/cart?guestId=${agentGuest}`);

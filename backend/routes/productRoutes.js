@@ -131,6 +131,25 @@ router.get("/facets", async (req, res, next) => {
   }
 });
 
+//@route GET /api/products/sitemap
+//@desc published products and collections for the storefront sitemap
+//@access public
+router.get("/sitemap", async (req, res, next) => {
+  try {
+    const [products, collections] = await Promise.all([
+      Product.find({ isPublished: true }).select("name updatedAt images").sort({ updatedAt: -1 }).lean(),
+      Product.distinct("collections", { isPublished: true }),
+    ]);
+    res.set("Cache-Control", "public, max-age=600");
+    res.json({
+      products: products.map((p) => ({ _id: p._id, name: p.name, updatedAt: p.updatedAt, image: p.images?.[0]?.url })),
+      collections,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 //@route GET /api/products/suggest?q=
 //@desc quick search suggestions for the search bar
 //@access public
