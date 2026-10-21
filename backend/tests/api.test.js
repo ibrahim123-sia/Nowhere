@@ -295,6 +295,20 @@ const check = (name, cond, extra) => {
   check("malformed tool call handled", c.status === 200 && c.types.includes("done"), c.types);
   c = await chat({ guestId: agentGuest, sessionId, message: "rate limit test" });
   check("rate limit -> friendly error", c.types.includes("error") && /a lot of questions/.test(c.reply), c.reply);
+  // Provider fallback: the first provider's model is retired, Gemini answers.
+  // Gemini's thought signatures must survive the tool loop, and be stripped
+  // before the history goes to any other provider.
+  const llmUrl = process.env.AGENT_BASE_URL;
+  Object.assign(process.env, { AGENT_MODEL: "retired-model", GEMINI_API_KEY: "x", GEMINI_BASE_URL: llmUrl, GEMINI_MODEL: "mock-gemini" });
+  c = await chat({ guestId: agentGuest, message: "hi" });
+  const fbSession = c.events.find((e) => e.event === "session")?.data.sessionId;
+  check("retired model falls back to the next provider", /How can I help/.test(c.reply) && mock.log().at(-1).model === "mock-gemini", c.reply);
+  c = await chat({ guestId: agentGuest, sessionId: fbSession, message: "white shirt please" });
+  const sentCall = mock.log().at(-1).messages.findLast((m) => m.tool_calls)?.tool_calls[0];
+  check("Gemini thought signature is sent back with its tool call", c.reply.includes("I found") && sentCall?.extra_content?.google?.thought_signature === "sig_0", c.reply);
+  Object.assign(process.env, { AGENT_MODEL: "mock", GEMINI_API_KEY: "" });
+  c = await chat({ guestId: agentGuest, sessionId: fbSession, message: "show me jeans" });
+  check("signatures are stripped for other providers", c.reply.includes("I found") && !JSON.stringify(mock.log().at(-1).messages).includes("extra_content"), c.reply);
   r = await api("GET", `/agent/session/${sessionId}?guestId=${agentGuest}`);
   check("transcript stored", r.status === 200 && r.data.transcript.length >= 10, r.data?.transcript?.length);
   r = await api("GET", `/agent/session/${sessionId}?guestId=guest_other123456`);

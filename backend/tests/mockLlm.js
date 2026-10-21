@@ -65,6 +65,29 @@ function decide(body) {
   return { text: "Hello! How can I help you shop today?" };
 }
 
+// Mimics provider-specific strictness: "mock-gemini" behaves like Gemini 3
+// (tool calls in the current turn must carry their thought signature) and
+// every other model behaves like Groq (unknown tool call fields are rejected).
+function validate(body) {
+  if (body.model === "retired-model") {
+    return { status: 400, error: { message: "The model `retired-model` has been decommissioned", code: "model_decommissioned" } };
+  }
+  const msgs = body.messages || [];
+  let lastUserIndex = -1;
+  msgs.forEach((m, i) => m.role === "user" && (lastUserIndex = i));
+  for (const [i, m] of msgs.entries()) {
+    for (const call of m.tool_calls || []) {
+      if (body.model !== "mock-gemini" && call.extra_content) {
+        return { status: 400, error: { message: "property 'extra_content' is unsupported", code: "invalid_request_error" } };
+      }
+      if (body.model === "mock-gemini" && i > lastUserIndex && !call.extra_content?.google?.thought_signature) {
+        return { status: 400, error: { message: "Function call is missing a thought_signature", code: 400 } };
+      }
+    }
+  }
+  return null;
+}
+
 function sse(res, obj) {
   res.write(`data: ${JSON.stringify(obj)}\n\n`);
 }
@@ -75,7 +98,7 @@ const server = http.createServer((req, res) => {
   req.on("end", () => {
     const body = JSON.parse(raw || "{}");
     callLog.push(body);
-    const plan = decide(body);
+    const plan = validate(body) || decide(body);
     if (plan.status) {
       res.writeHead(plan.status, { "Content-Type": "application/json" });
       return res.end(JSON.stringify({ error: plan.error }));
@@ -91,7 +114,8 @@ const server = http.createServer((req, res) => {
       tools.forEach((t, i) => {
         const args = JSON.stringify(t.args);
         const half = Math.floor(args.length / 2);
-        sse(res, { ...base, choices: [{ index: 0, delta: { tool_calls: [{ index: i, id: `call_${i}_${Date.now()}`, type: "function", function: { name: t.name, arguments: args.slice(0, half) } }] } }] });
+        const signature = body.model === "mock-gemini" ? { extra_content: { google: { thought_signature: `sig_${i}` } } } : {};
+        sse(res, { ...base, choices: [{ index: 0, delta: { tool_calls: [{ index: i, id: `call_${i}_${Date.now()}`, type: "function", function: { name: t.name, arguments: args.slice(0, half) }, ...signature }] } }] });
         sse(res, { ...base, choices: [{ index: 0, delta: { tool_calls: [{ index: i, function: { arguments: args.slice(half) } }] } }] });
       });
       sse(res, { ...base, choices: [{ index: 0, delta: {}, finish_reason: "tool_calls" }] });

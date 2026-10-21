@@ -1,20 +1,26 @@
 // Streaming chat client for OpenAI-compatible APIs. Groq and Google Gemini
 // both expose this format, so one code path serves every free provider.
-// Providers are tried in order; on a rate limit or outage the next one with
-// a configured key takes over.
+// Providers are tried in order; if one fails before replying (rate limit,
+// outage, retired model, bad key) the next one with a configured key takes over.
 
 const PROVIDERS = {
   groq: {
     label: "Groq",
-    baseURL: () => "https://api.groq.com/openai/v1",
+    baseURL: () => process.env.GROQ_BASE_URL || "https://api.groq.com/openai/v1",
     apiKey: () => process.env.GROQ_API_KEY,
-    model: () => process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+    model: () => process.env.GROQ_MODEL || "openai/gpt-oss-120b",
+    // gpt-oss models reason before answering; keep it short and off the wire.
+    params: (model) => (model.startsWith("openai/gpt-oss") ? { reasoning_effort: "low", include_reasoning: false } : {}),
   },
   gemini: {
     label: "Google Gemini",
-    baseURL: () => "https://generativelanguage.googleapis.com/v1beta/openai",
+    baseURL: () => process.env.GEMINI_BASE_URL || "https://generativelanguage.googleapis.com/v1beta/openai",
     apiKey: () => process.env.GEMINI_API_KEY,
-    model: () => process.env.GEMINI_MODEL || "gemini-2.5-flash",
+    model: () => process.env.GEMINI_MODEL || "gemini-3.8-flash",
+    params: (model) => (/^gemini-(2\.5|[3-9])/.test(model) ? { reasoning_effort: "low" } : {}),
+    // Gemini 3 attaches a thought signature to each tool call (in
+    // `extra_content`) and rejects a follow-up request that drops it.
+    keepsToolCallExtras: true,
   },
   // Any other OpenAI-compatible endpoint (OpenRouter, a local Ollama, ...).
   custom: {
@@ -70,7 +76,19 @@ async function* readEvents(body) {
   }
 }
 
+// Provider-specific fields on stored tool calls (Gemini's thought signatures)
+// are only sent back to the provider that understands them; others reject them.
+function messagesFor(provider, messages) {
+  if (provider.keepsToolCallExtras) return messages;
+  return messages.map((m) =>
+    m.tool_calls?.some((call) => call.extra_content)
+      ? { ...m, tool_calls: m.tool_calls.map(({ extra_content, ...call }) => call) }
+      : m
+  );
+}
+
 async function streamFromProvider(provider, { messages, tools, onText, signal, maxTokens }) {
+  const model = provider.model();
   const response = await fetch(`${provider.baseURL()}/chat/completions`, {
     method: "POST",
     headers: {
@@ -78,13 +96,14 @@ async function streamFromProvider(provider, { messages, tools, onText, signal, m
       Authorization: `Bearer ${provider.apiKey()}`,
     },
     body: JSON.stringify({
-      model: provider.model(),
-      messages,
+      model,
+      messages: messagesFor(provider, messages),
       tools,
       tool_choice: "auto",
       temperature: 0.3,
       max_tokens: maxTokens,
       stream: true,
+      ...provider.params?.(model),
     }),
     signal: AbortSignal.any([signal, AbortSignal.timeout(REQUEST_TIMEOUT_MS)].filter(Boolean)),
   });
@@ -131,6 +150,7 @@ async function streamFromProvider(provider, { messages, tools, onText, signal, m
       if (part.id) call.id = part.id;
       if (part.function?.name) call.function.name += part.function.name;
       if (part.function?.arguments) call.function.arguments += part.function.arguments;
+      if (part.extra_content) call.extra_content = { ...call.extra_content, ...part.extra_content };
     });
 
     if (choice.finish_reason) finishReason = choice.finish_reason;
@@ -141,18 +161,18 @@ async function streamFromProvider(provider, { messages, tools, onText, signal, m
     id: call.id || `call_${Date.now()}_${i}`,
   }));
 
-  return { content, toolCalls, finishReason, provider: provider.name, model: provider.model() };
+  return { content, toolCalls, finishReason, provider: provider.name, model };
 }
 
-// Streams one completion, falling back to the next provider when one is
-// rate limited or down (only if nothing has been streamed yet).
+// Streams one completion. If a provider fails before any text has been
+// streamed, the next configured provider gets the same request.
 async function streamChat(options) {
   const providers = availableProviders();
   if (providers.length === 0) {
     throw new ProviderError("No AI provider is configured", { code: "not_configured" });
   }
 
-  let lastError;
+  const errors = [];
   for (const provider of providers) {
     let streamed = false;
     try {
@@ -165,15 +185,23 @@ async function streamChat(options) {
       });
     } catch (error) {
       if (options.signal?.aborted) throw error;
-      lastError =
+      const failure =
         error instanceof ProviderError
           ? error
           : new ProviderError(error.message, { provider: provider.name, retryable: true });
-      console.error(`[agent] ${provider.name} failed:`, lastError.status || "", lastError.message);
-      if (!lastError.retryable || streamed) throw lastError;
+      console.error(`[agent] ${provider.name} (${provider.model()}) failed:`, failure.status || "", failure.message);
+      // Half a reply can't be handed to another model.
+      if (streamed) throw failure;
+      errors.push(failure);
     }
   }
-  throw lastError;
+  // Report the most actionable failure: a rate limit, then a malformed tool
+  // call (the agent loop retries those), then whatever happened last.
+  throw (
+    errors.find((e) => e.status === 429) ||
+    errors.find((e) => e.code === "tool_use_failed") ||
+    errors[errors.length - 1]
+  );
 }
 
 module.exports = { streamChat, availableProviders, ProviderError };

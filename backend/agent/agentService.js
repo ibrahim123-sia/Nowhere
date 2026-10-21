@@ -107,7 +107,8 @@ async function runTurn({ session, text, ctx, emit, signal }) {
         tools: toolSchemas,
         onText,
         signal,
-        maxTokens: 900,
+        // Reasoning models spend part of this budget thinking before they answer.
+        maxTokens: 1600,
       });
     } catch (error) {
       // Groq rejects malformed tool calls with `tool_use_failed`; a retry usually works.
