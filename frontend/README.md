@@ -17,7 +17,7 @@ Copy `.env.example` to `.env` and set `VITE_BACKEND_URL` to the API origin. `SIT
 
 ```
 api/            Vercel functions: /product/:slug previews, /sitemap.xml, /robots.txt
-public/         static files served as-is (og-image.jpg)
+public/         static files served as-is (favicons, app icons, manifest, og-image.jpg)
 src/
   components/   Layout, Product, Cart, Order, Agent, Admin, Common
   Pages/        route-level pages

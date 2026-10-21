@@ -252,7 +252,7 @@ Nowhere/
 │   └── utils/           mailer, errors, text helpers
 ├── frontend/
 │   ├── api/             Vercel functions: product previews, sitemap.xml, robots.txt
-│   ├── public/          static files (share image)
+│   ├── public/          favicons, app icons, web manifest, share image
 │   └── src/
 │       ├── components/  Layout, Product, Cart, Order, Agent, Admin, Common
 │       ├── Pages/       route-level pages
