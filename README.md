@@ -42,7 +42,7 @@ Its headline feature is **Iris**, an AI shopping agent built into every page. Ir
 | **Orders** | Human-friendly order numbers, status timeline, cancel while processing, buy again, guest tracking by order number + email, confirmation emails |
 | **Accounts** | JWT auth with email OTP verification, password reset, profile, saved address, password change, persistent wishlist |
 | **Admin** | Revenue, average order value, orders by status, 30-day sales chart, low-stock alerts; one product form for add/edit; order workflow; user management |
-| **Assistant** | Iris: streaming chat with product cards, order summaries with Confirm buttons and order-placed cards; server-enforced confirmation |
+| **Assistant** | Iris: streaming chat with product cards (Add to bag, Buy now, size and colour picker, wishlist), a live bag card with quantity, remove and checkout, order summaries with Confirm buttons and order-placed cards; server-enforced confirmation |
 | **SEO** | Readable product URLs, per-page titles, descriptions and canonical links, Open Graph and X cards, schema.org Product, Breadcrumb, FAQ and site search data, live sitemap and robots.txt, product previews rendered on the server |
 
 ## Meet Iris, the AI shopping assistant
@@ -223,7 +223,7 @@ The storefront is a single-page app, so search engines and link previews get hel
 npm test
 ```
 
-The suite starts the real Express app against an in-memory MongoDB and a mock OpenAI-compatible LLM that streams scripted tool calls. Its 90 checks cover search and filters, cart validation, guest and customer checkout, coupons, stock reservation and release, order privacy, the OTP flow, admin rules, reviews, the contact form, and the assistant: streaming, product and confirmation cards, the server-side confirmation gate, the Confirm button path, session privacy, provider errors and fallback, and Gemini thought signatures. CI runs the suite, the linter and a production build on every push.
+The suite starts the real Express app against an in-memory MongoDB and a mock OpenAI-compatible LLM that streams scripted tool calls. Its 92 checks cover search and filters, cart validation, guest and customer checkout, coupons, stock reservation and release, order privacy, the OTP flow, admin rules, reviews, the contact form, and the assistant: streaming, product, bag and confirmation cards, the server-side confirmation gate, the Confirm button path, refusing an order whose bag changed after the summary, session privacy, provider errors and fallback, and Gemini thought signatures. CI runs the suite, the linter and a production build on every push.
 
 ## Deployment
 
