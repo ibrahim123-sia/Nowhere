@@ -53,6 +53,14 @@ const AgentWidget = () => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, toolLabel, open]);
 
+  // Grow the message box with its text, up to its max height.
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [input]);
+
   useEffect(() => {
     if (!open) return undefined;
     const onKey = (e) => e.key === "Escape" && dispatch(closeAgent());
@@ -183,7 +191,12 @@ const AgentWidget = () => {
           }}
           className="border-t border-stone-200 p-3"
         >
-          <div className="flex items-end gap-2 rounded-2xl border border-stone-300 bg-white p-1.5 focus-within:border-ink">
+          <div
+            onClick={() => inputRef.current?.focus()}
+            className={`flex cursor-text items-end gap-2 rounded-2xl border bg-white p-1.5 transition focus-within:border-ink focus-within:ring-1 focus-within:ring-ink ${
+              enabled === false ? "border-stone-200 bg-stone-50" : "border-stone-300 hover:border-ink"
+            }`}
+          >
             <textarea
               ref={inputRef}
               rows={1}
@@ -198,7 +211,7 @@ const AgentWidget = () => {
               }}
               placeholder={enabled === false ? "Assistant offline" : "Ask about sizes, styles, orders..."}
               disabled={enabled === false}
-              className="max-h-28 min-h-[40px] flex-1 resize-none bg-transparent px-3 py-2.5 text-sm focus:outline-none disabled:cursor-not-allowed"
+              className="max-h-28 min-h-[40px] flex-1 resize-none bg-transparent px-3 py-2.5 text-sm placeholder:text-stone-400 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 disabled:cursor-not-allowed"
               aria-label="Message Iris"
             />
             {streaming ? (
