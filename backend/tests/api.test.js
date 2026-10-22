@@ -267,8 +267,10 @@ const check = (name, cond, extra) => {
   check("product cards have image and an SEO-friendly url", firstCard.image && /^\/product\/[a-z0-9-]+-[a-f0-9]{24}$/.test(firstCard.url), firstCard.url);
   c = await chat({ guestId: agentGuest, sessionId, message: "add the first one" });
   check("agent adds to cart", c.types.includes("cart") && c.reply.includes("Added"), c);
+  check("bag card shown after adding", c.events.find((e) => e.event === "cart_view")?.data.itemCount === 2, c.types);
   r = await api("GET", `/cart?guestId=${agentGuest}`);
   check("cart really updated", r.data.products.length === 1 && r.data.products[0].quantity === 2, r.data);
+  const agentLine = r.data.products[0];
   c = await chat({ guestId: "guest_intruder1234", sessionId, message: "add the first one" });
   r = await api("GET", `/cart?guestId=guest_intruder1234`);
   check("another guest can't reuse the session", r.status === 200 && r.data.products.length <= 1 && c.events.find((e) => e.event === "session").data.sessionId !== sessionId, c.events[0]);
@@ -276,6 +278,11 @@ const check = (name, cond, extra) => {
   check("same-turn confirm is refused", (await Order.countDocuments({ guestId: agentGuest })) === 0 && c.types.includes("confirm"), c.reply);
   c = await chat({ guestId: agentGuest, sessionId, message: "checkout please" });
   check("checkout prepares confirmation", c.types.includes("confirm") && c.events.find((e) => e.event === "done").data.pendingAction?.type === "place_order", c.types);
+  // Changing the bag after the summary must not place an order at the old total.
+  await api("PUT", "/cart", { productId: agentLine.productId, size: agentLine.size, color: agentLine.color, quantity: 1, guestId: agentGuest });
+  r = await api("POST", "/agent/action", { guestId: agentGuest, sessionId, decision: "confirm" });
+  check("stale order summary is not placed", r.status === 200 && /bag changed/.test(r.data.reply) && (await Order.countDocuments({ guestId: agentGuest })) === 0 && !r.data.pendingAction, r.data);
+  c = await chat({ guestId: agentGuest, sessionId, message: "checkout please" });
   r = await api("POST", "/agent/action", { guestId: "guest_wrong12345", sessionId, decision: "confirm" });
   check("action needs session owner", r.status === 404);
   r = await api("POST", "/agent/action", { guestId: agentGuest, sessionId, decision: "confirm" });

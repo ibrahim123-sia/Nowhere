@@ -36,12 +36,14 @@ function productCard(p) {
     sizes: p.sizes,
     inStock: p.countInStock > 0,
     onlyLeft: p.countInStock > 0 && p.countInStock <= 5 ? p.countInStock : undefined,
+    stock: p.countInStock,
     image: p.images?.[0]?.url,
     url: productPath(p),
   };
 }
 
-const modelCard = ({ image, url, ...rest }) => rest;
+// The model only needs inStock / onlyLeft; image, url and stock are for the chat window.
+const modelCard = ({ image, url, stock, ...rest }) => rest;
 
 function cartView(cart, totals) {
   const summary = cartService.summarize(cart);
@@ -87,6 +89,20 @@ async function currentCartView(ctx) {
   const totals = await orderService.quote(cart);
   return cartView(cart, totals);
 }
+
+// Shows the shopper their bag (with quantity / remove / checkout buttons)
+// under the reply. The chat window reads the live cart; this is a snapshot.
+function showCart(ctx, view) {
+  ctx.emit("cart_view", { itemCount: view.itemCount, total: view.total });
+  return view;
+}
+
+// Identifies the exact cart contents an order summary was priced from.
+const cartSignature = (cart) =>
+  (cart?.products || [])
+    .map((i) => `${i.productId}:${i.size}:${i.color}:${i.quantity}:${i.price}`)
+    .sort()
+    .join("|");
 
 // ---------- Tool definitions ----------
 
@@ -291,7 +307,7 @@ const handlers = {
   },
 
   async get_cart(args, ctx) {
-    return currentCartView(ctx);
+    return showCart(ctx, await currentCartView(ctx));
   },
 
   async add_to_cart(args, ctx) {
@@ -305,14 +321,14 @@ const handlers = {
     return {
       added: `${product.name} (${line.size}, ${line.color})`,
       quantityInCart: line.quantity,
-      cart: await currentCartView(ctx),
+      cart: showCart(ctx, await currentCartView(ctx)),
     };
   },
 
   async update_cart_item(args, ctx) {
     await cartService.updateItem(ctx.owner, args);
     ctx.emit("cart", { action: "updated" });
-    return { updated: true, cart: await currentCartView(ctx) };
+    return { updated: true, cart: showCart(ctx, await currentCartView(ctx)) };
   },
 
   async get_store_info({ topic }) {
@@ -386,7 +402,7 @@ const handlers = {
       type: "place_order",
       turn: ctx.session.turn,
       createdAt: Date.now(),
-      payload: { shippingAddress, email, couponCode: totals.couponCode || undefined },
+      payload: { shippingAddress, email, couponCode: totals.couponCode || undefined, cart: cartSignature(cart) },
       summary,
     };
     ctx.emit("confirm", { kind: "order", summary });
@@ -454,7 +470,7 @@ const handlers = {
     const order = await orderService.findOwnedOrder(ctx.owner, orderNumber);
     const { added, skipped } = await cartService.reorder(ctx.owner, order);
     if (added.length) ctx.emit("cart", { action: "reordered" });
-    return { added, skipped, cart: await currentCartView(ctx) };
+    return { added, skipped, cart: showCart(ctx, await currentCartView(ctx)) };
   },
 };
 
@@ -484,6 +500,12 @@ async function executePendingAction(ctx) {
   ctx.session.pendingAction = null;
 
   if (pending.type === "place_order") {
+    // The shopper can change the bag from the chat or the site after seeing
+    // the summary; never place an order for a total they haven't seen.
+    const cart = await cartService.getCart(ctx.owner);
+    if (pending.payload.cart && cartSignature(cart) !== pending.payload.cart) {
+      return { error: "Your bag changed after the order summary was shown, so I haven't placed the order. Ask me to check out again to see the updated total." };
+    }
     const order = await orderService.placeOrder({
       owner: ctx.owner,
       user: ctx.user,

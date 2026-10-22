@@ -7,8 +7,7 @@ const MAX_STEPS = 6; // model calls per shopper message
 const HISTORY_WINDOW = 24; // messages sent to the model each call
 const MAX_STORED_MESSAGES = 120;
 const MAX_TRANSCRIPT = 100;
-const CARD_EVENTS = ["products", "confirm", "order"];
-
+const CARD_EVENTS = ["products", "confirm", "order", "cart_view"];
 
 // Keeps the most recent messages, starting at a user message so a tool
 // result is never sent without the assistant call that produced it.
@@ -52,6 +51,13 @@ async function runTool(call, ctx) {
   }
 }
 
+// One bag per reply: a later cart change replaces the earlier snapshot.
+function addCard(cards, card) {
+  const previous = card.type === "cart_view" ? cards.findIndex((c) => c.type === "cart_view") : -1;
+  if (previous !== -1) cards.splice(previous, 1);
+  cards.push(card);
+}
+
 function friendlyError(error) {
   if (error?.code === "not_configured") {
     return "The shopping assistant isn't set up yet. You can still browse and check out normally.";
@@ -76,7 +82,7 @@ async function runTurn({ session, text, ctx, emit, signal }) {
     ...ctx,
     session,
     emit: (event, data) => {
-      if (CARD_EVENTS.includes(event)) cards.push({ type: event, ...data });
+      if (CARD_EVENTS.includes(event)) addCard(cards, { type: event, ...data });
       emit(event, data);
     },
   };
@@ -180,7 +186,7 @@ async function runAction({ session, decision, ctx }) {
     session,
     emit: (event, data) => {
       events.push({ event, data });
-      if (CARD_EVENTS.includes(event)) cards.push({ type: event, ...data });
+      if (CARD_EVENTS.includes(event)) addCard(cards, { type: event, ...data });
     },
   };
 
