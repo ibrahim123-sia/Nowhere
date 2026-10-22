@@ -48,7 +48,7 @@ const CartContents = ({ cart, onNavigate, compact = false }) => {
                   {item.color} · Size {item.size}
                 </p>
               </div>
-              <p className="text-sm font-semibold">{formatPrice(item.price * item.quantity)}</p>
+              <p className="whitespace-nowrap text-sm font-semibold">{formatPrice(item.price * item.quantity)}</p>
             </div>
             <div className="mt-auto flex items-center justify-between pt-3">
               <div className="flex items-center rounded-full border border-stone-300">

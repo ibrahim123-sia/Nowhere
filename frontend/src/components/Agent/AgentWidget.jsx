@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { HiSparkles, HiPaperAirplane, HiArrowPath, HiStop } from "react-icons/hi2";
+import { HiSparkles, HiPaperAirplane, HiArrowPath, HiStop, HiOutlineShoppingBag } from "react-icons/hi2";
 import { IoMdClose } from "react-icons/io";
 import AgentMarkdown from "./AgentMarkdown";
-import { ConfirmCard, OrderPlacedCard, ProductCardsRow } from "./AgentCards";
+import { CartCard, ConfirmCard, OrderPlacedCard, ProductCardsRow } from "./AgentCards";
 import {
   closeAgent,
   loadAgentSession,
@@ -12,6 +12,7 @@ import {
   stopAgentReply,
   toggleAgent,
 } from "../../redux/slices/agentSlice";
+import { openCartDrawer } from "../../redux/slices/cartSlice";
 
 const SUGGESTIONS = [
   "Find me a white shirt for the office",
@@ -40,6 +41,7 @@ const AgentWidget = () => {
   const dispatch = useDispatch();
   const { open, enabled, messages, streaming, toolLabel, sessionId, sessionLoaded } = useSelector((state) => state.agent);
   const { user } = useSelector((state) => state.auth);
+  const bagCount = useSelector((state) => state.cart.cart?.products?.reduce((n, item) => n + item.quantity, 0) || 0);
   const [input, setInput] = useState("");
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
@@ -80,10 +82,14 @@ const AgentWidget = () => {
     if (window.innerWidth < 640) dispatch(closeAgent());
   };
 
-  const lastConfirmIndex = messages.reduce(
-    (found, msg, i) => (msg.cards?.some((c) => c.type === "confirm") ? i : found),
-    -1
-  );
+  const lastIndexOf = (type) => messages.reduce((found, msg, i) => (msg.cards?.some((c) => c.type === type) ? i : found), -1);
+  const lastConfirmIndex = lastIndexOf("confirm");
+  const lastCartIndex = lastIndexOf("cart_view");
+
+  const openBag = () => {
+    dispatch(closeAgent());
+    dispatch(openCartDrawer());
+  };
 
   return (
     <>
@@ -113,6 +119,14 @@ const AgentWidget = () => {
               {enabled === false ? "Offline" : streaming ? "Typing..." : "AI shopping assistant"}
             </p>
           </div>
+          <button onClick={openBag} className="relative rounded-full p-2 text-ink-muted hover:bg-stone-100 hover:text-ink" aria-label={`Open your bag (${bagCount} ${bagCount === 1 ? "item" : "items"})`} title="Your bag">
+            <HiOutlineShoppingBag className="h-[18px] w-[18px]" />
+            {bagCount > 0 && (
+              <span className="absolute right-0.5 top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-ink px-1 text-[9px] font-semibold text-white">
+                {bagCount}
+              </span>
+            )}
+          </button>
           {messages.length > 0 && (
             <button onClick={() => dispatch(resetAgentChat())} className="rounded-full p-2 text-ink-muted hover:bg-stone-100 hover:text-ink" aria-label="Start a new chat" title="New chat">
               <HiArrowPath className="h-4 w-4" />
@@ -171,6 +185,7 @@ const AgentWidget = () => {
                     if (card.type === "products") return <ProductCardsRow key={i} cards={card.cards} onNavigate={onNavigate} />;
                     if (card.type === "confirm") return <ConfirmCard key={i} card={card} isLatest={index === lastConfirmIndex} />;
                     if (card.type === "order") return <OrderPlacedCard key={i} card={card} onNavigate={onNavigate} />;
+                    if (card.type === "cart_view") return <CartCard key={i} card={card} isLatest={index === lastCartIndex} onNavigate={onNavigate} />;
                     return null;
                   })}
                   {msg.status === "streaming" && toolLabel && (

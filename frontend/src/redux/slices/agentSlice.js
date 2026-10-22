@@ -66,6 +66,10 @@ function handleEvent(event, data, dispatch) {
     case "cart":
       dispatch(fetchCart());
       break;
+    case "cart_view":
+      dispatch(a.addCard({ type: event, ...data }));
+      dispatch(fetchCart());
+      break;
     case "done":
       dispatch(a.setPendingAction(data.pendingAction));
       break;
@@ -197,7 +201,10 @@ const agentSlice = createSlice({
     },
     addCard: (state, action) => {
       const msg = currentAssistant(state);
-      if (msg) msg.cards.push(action.payload);
+      if (!msg) return;
+      // One bag per reply: a later cart change replaces the earlier one.
+      if (action.payload.type === "cart_view") msg.cards = msg.cards.filter((c) => c.type !== "cart_view");
+      msg.cards.push(action.payload);
     },
     setPendingAction: (state, action) => {
       state.pendingAction = action.payload || null;
