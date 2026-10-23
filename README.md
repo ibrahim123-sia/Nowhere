@@ -13,7 +13,7 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38B2AC?logo=tailwindcss&logoColor=white)
 ![AI](https://img.shields.io/badge/AI-Groq%20%7C%20Gemini-F55036)
 
-[Features](#features) · [Iris](#meet-nora-the-ai-shopping-assistant) · [Screenshots](#screenshots) · [Quick start](#quick-start) · [Architecture](#architecture) · [API](#api-overview) · [Docs](#documentation)
+[Features](#features) · [Iris](#meet-iris-the-ai-shopping-assistant) · [Screenshots](#screenshots) · [Quick start](#quick-start) · [Architecture](#architecture) · [API](#api-overview) · [Docs](#documentation)
 
 <img src="docs/assets/preview.jpg" alt="Nowhere storefront with the Iris assistant open" width="100%" />
 
@@ -98,6 +98,8 @@ sequenceDiagram
 | <img src="docs/assets/home.jpg" alt="Home page" /> | <img src="docs/assets/product.jpg" alt="Product page" /> |
 | **Collection filters** | **Guest checkout** |
 | <img src="docs/assets/collection.jpg" alt="Collection page with filters" /> | <img src="docs/assets/checkout.jpg" alt="Checkout page" /> |
+| **Add to bag from the chat** | **Bag card with quantity and checkout** |
+| <img src="docs/assets/assistant-add-to-bag.jpg" alt="Iris size and colour picker" /> | <img src="docs/assets/assistant-bag.jpg" alt="Iris bag card" /> |
 | **Iris prepares the order** | **Order placed from chat** |
 | <img src="docs/assets/assistant-checkout.jpg" alt="Assistant order summary" /> | <img src="docs/assets/assistant-order-placed.jpg" alt="Assistant order placed" /> |
 | **Admin dashboard** | **Order management** |
